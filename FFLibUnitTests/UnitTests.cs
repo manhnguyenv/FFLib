@@ -20,7 +20,29 @@ namespace FFLibUnitTests
             //Assert
             StringAssert.AreEqualIgnoringCase("this is a test", testObject.propertyStripHtml);
         }
+        public void CanStripHtmlDoc()
+        {
+            //Arrange
+            TestObject testObject = new TestObject() { propertyStripHtml = "<html><head><meta type=\"qwerty\"/></head><body><a>this is a test</a></body></html>" };
 
+            //Act
+            FFLib.Classes.HtmlEncoder.Encode(testObject);
+
+            //Assert
+            StringAssert.AreEqualIgnoringCase("this is a test", testObject.propertyStripHtml);
+        }
+
+        public void CanStripStringFragment()
+        {
+            //Arrange
+            TestObject testObject = new TestObject() { propertyStripHtml = "begin outside an element <a>this is a test</a> then more text" };
+
+            //Act
+            FFLib.Classes.HtmlEncoder.Encode(testObject);
+
+            //Assert
+            StringAssert.AreEqualIgnoringCase("begin outside an element this is a test then more text", testObject.propertyStripHtml);
+        }
 
         [Test]
         public void CanAllowHtml()
