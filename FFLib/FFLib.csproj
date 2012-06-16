@@ -51,8 +51,14 @@
   <ItemGroup>
     <Compile Include="Attributes\HtmlEncodingAttribute.cs" />
     <Compile Include="Attributes\MapsToAttribute.cs" />
-    <Compile Include="Classes\DTOBinder.cs" />
-    <Compile Include="Classes\HtmlEncoder.cs" />
+    <Compile Include="Data\Attributes\TableAttributes.cs" />
+    <Compile Include="Data\DBConnection.cs" />
+    <Compile Include="Data\DBTable.cs" />
+    <Compile Include="Data\Extensions\String.cs" />
+    <Compile Include="Data\ORMInterfaces.cs" />
+    <Compile Include="Data\SqlMacro.cs" />
+    <Compile Include="Utils\DTOBinder.cs" />
+    <Compile Include="Utils\HtmlEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

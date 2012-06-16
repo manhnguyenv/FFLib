@@ -6,7 +6,7 @@ using System.Reflection;
 using FFLib.Attributes;
 using Microsoft.Security.Application;
 
-namespace FFLib.Classes
+namespace FFLib
 {
     public class HtmlEncoder
     {

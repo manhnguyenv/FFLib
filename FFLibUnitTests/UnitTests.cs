@@ -15,7 +15,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyStripHtml = "<a>this is a test</a>"};
             
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("this is a test", testObject.propertyStripHtml);
@@ -26,7 +26,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyStripHtml = "<html><head><meta type=\"qwerty\"/></head><body><a>this is a test</a></body></html>" };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("this is a test", testObject.propertyStripHtml);
@@ -38,7 +38,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyStripHtml = "begin outside an element <a>this is a test</a> then more text" };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("begin outside an element this is a test then more text", testObject.propertyStripHtml);
@@ -51,7 +51,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowUnsafeHtml = "<script>this is a test</script>" };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("<script>this is a test</script>", testObject.propertyAllowUnsafeHtml);
@@ -66,7 +66,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml= test};
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("here\r\n<p>this is a test</p>\r\n", testObject.propertyAllowSafeHtml);          
@@ -80,7 +80,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml = test };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("title\r\n<p>this is a paragraph with some <span>stuff</span></p>\r\n", testObject.propertyAllowSafeHtml);         
@@ -96,7 +96,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml = test };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("title\r\n<p>this is a paragraph with some <span>stuff</span></p>\r\n<a>this is malformed</a>", testObject.propertyAllowSafeHtml);
@@ -110,7 +110,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml = test };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("Hello<a>This is html</a>", testObject.propertyAllowSafeHtml);  
@@ -124,7 +124,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml = test };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("<a>This is html</a>Hello", testObject.propertyAllowSafeHtml);
@@ -137,7 +137,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml = "<a>more stuff & things</a>" };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("<a>more stuff &amp; things</a>", testObject.propertyAllowSafeHtml);
@@ -150,7 +150,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyAllowSafeHtml = "<script>this is a test</script><a>more stuff</a>" };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("<a>more stuff</a>", testObject.propertyAllowSafeHtml);
@@ -166,7 +166,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyEncodeHtml = "<p>this is a test</p>" };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("&lt;p&gt;this is a test&lt;/p&gt;", testObject.propertyEncodeHtml);
@@ -182,7 +182,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyEncodeHtml = test,propertyAllowSafeHtml = test,propertyAllowUnsafeHtml = test,propertyStripHtml = test };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase(test, testObject.propertyEncodeHtml);
@@ -199,7 +199,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyNoAttribute = test};
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             StringAssert.AreEqualIgnoringCase("&lt;a&gt;this is a test&lt;/a&gt;", testObject.propertyNoAttribute);
@@ -214,7 +214,7 @@ namespace FFLibUnitTests
             TestObject testObject = new TestObject() { propertyInt =5 };
 
             //Act
-            FFLib.Classes.HtmlEncoder.Encode(testObject);
+            FFLib.HtmlEncoder.Encode(testObject);
 
             //Assert
             Assert.AreEqual(5, testObject.propertyInt);

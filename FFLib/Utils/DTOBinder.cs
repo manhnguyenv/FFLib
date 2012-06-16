@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Reflection;
 
-namespace FFLib.Classes
+namespace FFLib
 {
     public static class DTOBinder
     {
