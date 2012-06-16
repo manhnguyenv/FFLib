@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FFLibUnitTests</RootNamespace>
     <AssemblyName>FFLibUnitTests</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -57,7 +57,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FFLib\FFLibV2.csproj">
+    <ProjectReference Include="..\FFLib\FFLib.csproj">
       <Project>{099EE221-5FC9-4B75-8EEB-28E56C04C5FC}</Project>
       <Name>FFLib</Name>
     </ProjectReference>
