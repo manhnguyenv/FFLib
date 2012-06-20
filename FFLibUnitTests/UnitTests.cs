@@ -183,6 +183,19 @@ namespace FFLibUnitTests
             StringAssert.AreEqualIgnoringCase("&lt;a&gt;this is a test&lt;/a&gt;", testObject.propertyNoAttribute);
         }
 
+        [Test]
+        public void DoesNotEncodeNullString()
+        {
+            //Arrange
+            string test = "<a>this is a test</a>";
+            TestObject testObject = new TestObject() { propertyNoAttribute = null };
+
+            //Act
+            FFLib.Classes.HtmlEncoder.Encode(testObject);
+
+            //Assert
+            StringAssert.AreEqualIgnoringCase(null, testObject.propertyNoAttribute);
+        }
 
         [Test]
         public void OnlyEncodeString()
