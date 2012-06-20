@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Reflection;
 
-namespace FFLib.Classes
+namespace FFLib
 {
     public static class DTOBinder
     {
@@ -195,16 +195,16 @@ namespace FFLib.Classes
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(sprefix) && sProp.Name != null && sProp.Name.StartsWith(sprefix)) { srcPropName = srcPropName.Substring(sprefix.Length); }
-                if (!string.IsNullOrWhiteSpace(ssuffix) && sProp.Name != null && sProp.Name.EndsWith(ssuffix)) { srcPropName = srcPropName.Remove(srcPropName.Length - ssuffix.Length); }
+                if (!IsNullOrWhiteSpace(sprefix) && sProp.Name != null && sProp.Name.StartsWith(sprefix)) { srcPropName = srcPropName.Substring(sprefix.Length); }
+                if (!IsNullOrWhiteSpace(ssuffix) && sProp.Name != null && sProp.Name.EndsWith(ssuffix)) { srcPropName = srcPropName.Remove(srcPropName.Length - ssuffix.Length); }
             }
             catch (Exception ex)
             { System.Diagnostics.Debug.WriteLine(ex.ToString()); }
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(tprefix) && sProp.Name != null) { srcPropName = tprefix + srcPropName; }
-                if (!string.IsNullOrWhiteSpace(tsuffix) && sProp.Name != null) { srcPropName = srcPropName + tsuffix; }
+                if (!IsNullOrWhiteSpace(tprefix) && sProp.Name != null) { srcPropName = tprefix + srcPropName; }
+                if (!IsNullOrWhiteSpace(tsuffix) && sProp.Name != null) { srcPropName = srcPropName + tsuffix; }
             }
             catch (Exception ex)
             { System.Diagnostics.Debug.WriteLine(ex.ToString()); }
@@ -240,6 +240,20 @@ namespace FFLib.Classes
                 case "date": prop.SetValue(obj, Convert.ToDateTime(value), null); break;
                 default: prop.SetValue(obj, value, null); break;
             }
+        }
+
+        static private bool IsNullOrWhiteSpace(string str)
+        {
+            #if CLR_V2   
+                #if CLR_V4     
+                    #error You can't define CLR_V2 and CLR_V4 at the same time   
+                    #endif    
+                return @string.IsNullOrWhiteSpace(str);
+            #elif CLR_V4    
+                return string.IsNullOrWhiteSpace(str);
+            #else  
+                #error Define either CLR_V2 or CLR_V4 to compile
+            #endif 
         }
     }
 }

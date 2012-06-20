@@ -6,7 +6,7 @@ using System.Reflection;
 using FFLib.Attributes;
 using Microsoft.Security.Application;
 
-namespace FFLib.Classes
+namespace FFLib
 {
     public class HtmlEncoder
     {
@@ -29,7 +29,11 @@ namespace FFLib.Classes
                         if (attribs.Where(m => m is HtmlEncodingAttribute).Count() == 0  && p.PropertyType == typeof(string))
                         {
                             var value = p.GetValue(sourceObj, null);
-                            value = Microsoft.Security.Application.Encoder.HtmlEncode((string)value);
+#if CLR_V4
+                             value = Microsoft.Security.Application.Encoder.HtmlEncode((string)value);
+#else
+                             value = Microsoft.Security.Application.AntiXss.HtmlEncode((string)value);
+#endif
                             _setValue(sourceObj, p, value);
                         }
                         foreach (var attr in attribs)
@@ -57,7 +61,11 @@ namespace FFLib.Classes
                                             try
                                             {
                                                 var value = p.GetValue(sourceObj, null);
+#if CLR_V4
                                                 value = Microsoft.Security.Application.Encoder.HtmlEncode((string)value);
+#else
+                                                value = Microsoft.Security.Application.AntiXss.HtmlEncode((string)value);
+#endif
                                                 _setValue(sourceObj, p, value);
                                             }
                                             catch (Exception ex)

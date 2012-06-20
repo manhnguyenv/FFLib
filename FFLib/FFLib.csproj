@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CLR_V4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -51,8 +51,19 @@
   <ItemGroup>
     <Compile Include="Attributes\HtmlEncodingAttribute.cs" />
     <Compile Include="Attributes\MapsToAttribute.cs" />
-    <Compile Include="Classes\DTOBinder.cs" />
-    <Compile Include="Classes\HtmlEncoder.cs" />
+    <Compile Include="Data\Attributes\TableAttributes.cs" />
+    <Compile Include="Data\DBConnection.cs" />
+    <Compile Include="Data\DBTable.cs" />
+    <Compile Include="Data\Extensions\String.cs" />
+    <Compile Include="Data\ORMInterfaces.cs" />
+    <Compile Include="Data\SqlMacro.cs" />
+    <Compile Include="Threading\BlockingQueue.cs" />
+    <Compile Include="Threading\SendOrPostCallbackItem.cs" />
+    <Compile Include="Threading\SynchronizationContext.cs" />
+    <Compile Include="Threading\StaThread.cs" />
+    <Compile Include="Threading\SyncronizationQueue.cs" />
+    <Compile Include="Utils\DTOBinder.cs" />
+    <Compile Include="Utils\HtmlEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
