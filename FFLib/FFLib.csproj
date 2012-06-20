@@ -57,6 +57,11 @@
     <Compile Include="Data\Extensions\String.cs" />
     <Compile Include="Data\ORMInterfaces.cs" />
     <Compile Include="Data\SqlMacro.cs" />
+    <Compile Include="Threading\BlockingQueue.cs" />
+    <Compile Include="Threading\SendOrPostCallbackItem.cs" />
+    <Compile Include="Threading\SynchronizationContext.cs" />
+    <Compile Include="Threading\StaThread.cs" />
+    <Compile Include="Threading\SyncronizationQueue.cs" />
     <Compile Include="Utils\DTOBinder.cs" />
     <Compile Include="Utils\HtmlEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
