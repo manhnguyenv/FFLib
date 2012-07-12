@@ -1,6 +1,6 @@
 ﻿/*******************************************************
  * Project: FFLib V1.0
- * Title: HTMLEncodingAttribute.cs
+ * Title: String.cs
  * Author: Phillip Bird of Fast Forward,LLC
  * Copyright © 2012 Fast Forward, LLC. 
  * Dual licensed under the MIT or GPL Version 2 licenses.
@@ -10,30 +10,19 @@
  * Contributions to FFLib requires a contributor grant on file with Fast Forward, LLC.
 ********************************************************/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace FFLib.Attributes
+
+namespace FFLib.Extensions
 {
-    public enum HtmlEncoding { StripHtml, EncodeHtml, AllowSafeHtml, AllowUnsafeHtml };
-
-    [AttributeUsage(AttributeTargets.Property)]
-    public class HtmlEncodingAttribute : Attribute
+    public static class DateTimeExtentions
     {
-        
-        public HtmlEncodingAttribute(HtmlEncoding encodingOption)
+        public static string ToSqlDateTime(this DateTime self)
         {
-            _encodingOption = encodingOption;
+            return self.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
         }
-
-        private HtmlEncoding _encodingOption;
-
-        public HtmlEncoding EncodingOption
+        public static string ToSqlDate(this DateTime self)
         {
-            get { return _encodingOption; }
-            set { _encodingOption = value; }
+            return self.ToString("yyyy-MM-dd");
         }
     }
 }
-
