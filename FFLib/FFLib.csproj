@@ -54,6 +54,7 @@
     <Compile Include="Data\Attributes\TableAttributes.cs" />
     <Compile Include="Data\DBConnection.cs" />
     <Compile Include="Data\DBTable.cs" />
+    <Compile Include="Data\Extensions\DateTime.cs" />
     <Compile Include="Data\Extensions\String.cs" />
     <Compile Include="Data\ORMInterfaces.cs" />
     <Compile Include="Data\SqlMacro.cs" />
