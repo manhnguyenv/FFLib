@@ -58,6 +58,7 @@
     <Compile Include="Data\ORMInterfaces.cs" />
     <Compile Include="Data\SqlMacro.cs" />
     <Compile Include="Threading\BlockingQueue.cs" />
+    <Compile Include="Threading\NonBlockingQueue.cs" />
     <Compile Include="Threading\SendOrPostCallbackItem.cs" />
     <Compile Include="Threading\SynchronizationContext.cs" />
     <Compile Include="Threading\StaThread.cs" />
