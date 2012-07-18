@@ -1,7 +1,13 @@
 ﻿/*******************************************************
- * Copyright © 2012 Kendig keast Collaborative, Inc. 
- * All rights reserved.
- * Any redistribution or reproduction of part or all of the contents in any form is prohibited.
+ * Project: FFLib V1.0
+ * Title: DBTable.cs
+ * Author: Phillip Bird of Fast Forward,LLC
+ * Copyright © 2012 Fast Forward, LLC. 
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * Use of any component of FFLib requires acceptance and adhearance 
+ * to the terms of either the MIT License or the GNU General Public License (GPL) Version 2 exclusively.
+ * Notification of license selection is not required and will be infered based on applicability.
+ * Contributions to FFLib requires a contributor grant on file with Fast Forward, LLC.
 ********************************************************/
 using System;
 using System.Collections.Generic;
@@ -72,6 +78,19 @@ namespace FFLib.Data
             return rows[0];
         }
 
+        public virtual T LoadOne(string SqlText)
+        {
+            return this.LoadOne(SqlText, null);
+        }
+
+        public virtual T LoadOne(string SqlText, System.Data.SqlClient.SqlParameter[] paramList)
+        {
+            T[] results;
+            results = this.Load(SqlText, null, paramList);
+            if (results == null || results.Length == 0) return null;
+            return results[0];
+        }
+
         public virtual T[] Load(string SqlText)
         {
             return this.Load(SqlText, null, null);
@@ -103,11 +122,16 @@ namespace FFLib.Data
 
         public virtual Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
         {
+            return LoadAssoc(sql, null, SqlParams, keyfield);
+        }
+
+        public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield)
+        {
             Dictionary<string, T> results = new Dictionary<string, T>();
             if (string.IsNullOrEmpty(keyfield) || keyfield.Trim() == string.Empty) return results;
             if (string.IsNullOrEmpty(sql) || sql.Trim() == string.Empty) return results;
 
-            T[] rows = this.Load(sql, SqlParams);
+            T[] rows = this.Load(sql, SqlMacros, SqlParams);
 
             foreach (T row in rows)
             {
@@ -143,6 +167,11 @@ namespace FFLib.Data
             AssocList.Add(key.ToString(), row);
         }
 
+        public int Execute(string SqlText)
+        {
+            return this.Execute(SqlText, null, null);
+        }
+
         public int Execute(string SqlText, Sql.SqlParameter[] SqlParams)
         {
             return this.Execute(SqlText, null, SqlParams);
@@ -162,12 +191,50 @@ namespace FFLib.Data
         public int Execute(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
         {
             Sql.SqlDataReader reader = null;
-            Sql.SqlCommand sqlCmd = new Sql.SqlCommand(this.ParseSql(SqlText, SQLMacros), _conn.Connection );
+            Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
             if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
             try
             {
                 _conn.Open();
                 return sqlCmd.ExecuteNonQuery();
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+        }
+
+        public object ExecuteScalar(string SqlText)
+        {
+            return this.ExecuteScalar(SqlText, null, null);
+        }
+
+        public object ExecuteScalar(string SqlText, Sql.SqlParameter[] SqlParams)
+        {
+            return this.ExecuteScalar(SqlText, null, SqlParams);
+        }
+
+        public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros)
+        {
+            return this.ExecuteScalar(SqlText, SQLMacros, null);
+        }
+        /// <summary>
+        /// Execute SQL Batch returning the first value of the first row of the resultset
+        /// </summary>
+        /// <param name="SqlText">SQL statements to be executed</param>
+        /// <param name="SQLMacros">Array of SQLMacros. SQLMacros will be substituted in to the SQL String before execution</param>
+        /// <param name="SqlParams">Array of SQL Parameters</param>
+        /// <returns>object : the first value of the first row of the resultset</returns>
+        public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
+        {
+            Sql.SqlDataReader reader = null;
+            Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
+            if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
+            try
+            {
+                _conn.Open();
+                return sqlCmd.ExecuteScalar();
             }
             finally
             {
@@ -381,7 +448,7 @@ namespace FFLib.Data
 
             sqlParams.Add(new Sql.SqlParameter("@pk", GetPKValue(obj)));
 
-            Sql.SqlCommand sqlCmd = new Sql.SqlCommand(sqlText, _conn.Connection );
+            Sql.SqlCommand sqlCmd = _conn.CreateCommand(sqlText); 
             sqlCmd.CommandType = CommandType.Text;
           
             sqlCmd.Parameters.AddRange(sqlParams.ToArray());

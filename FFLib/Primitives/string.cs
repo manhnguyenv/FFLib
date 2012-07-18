@@ -1,6 +1,6 @@
 ﻿/*******************************************************
  * Project: FFLib V1.0
- * Title: HTMLEncodingAttribute.cs
+ * Title: string.cs
  * Author: Phillip Bird of Fast Forward,LLC
  * Copyright © 2012 Fast Forward, LLC. 
  * Dual licensed under the MIT or GPL Version 2 licenses.
@@ -14,26 +14,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FFLib.Attributes
+namespace FFLib
 {
-    public enum HtmlEncoding { StripHtml, EncodeHtml, AllowSafeHtml, AllowUnsafeHtml };
-
-    [AttributeUsage(AttributeTargets.Property)]
-    public class HtmlEncodingAttribute : Attribute
+    /// <summary>
+    /// Override to provide key V4 methods in V2 targets. See CLR_V2 compiler directive
+    /// </summary>
+    public class @string
     {
-        
-        public HtmlEncodingAttribute(HtmlEncoding encodingOption)
+        public static bool IsNullOrWhiteSpace(string value)
         {
-            _encodingOption = encodingOption;
-        }
-
-        private HtmlEncoding _encodingOption;
-
-        public HtmlEncoding EncodingOption
-        {
-            get { return _encodingOption; }
-            set { _encodingOption = value; }
+            if (value == null)
+            {
+                return true;
+            }
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (!char.IsWhiteSpace(value[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
-
