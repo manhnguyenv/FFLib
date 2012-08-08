@@ -1,5 +1,4 @@
 # Do not track these files
-*.dll
 *.exe
 *.cache
 *.user
