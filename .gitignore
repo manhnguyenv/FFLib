@@ -1,0 +1,10 @@
+# Do not track these files
+*.dll
+*.exe
+*.cache
+*.user
+*.tlog
+*.vshost.exe.manifest
+*/debug/*
+*/obj/*
+*/bin/*
