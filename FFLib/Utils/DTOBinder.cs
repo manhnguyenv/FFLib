@@ -226,7 +226,10 @@ namespace FFLib
         static private void _setValue(Object obj, PropertyInfo prop, Object value)
         {
             string propTypeName = prop.PropertyType.Name;
-            if (prop.PropertyType.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(prop.PropertyType).Name; }
+            if (prop.PropertyType.IsGenericType) {
+                if (value == null) { prop.SetValue(obj, null, null); return; }
+                propTypeName = Nullable.GetUnderlyingType(prop.PropertyType).Name; 
+            }
             if (prop.PropertyType.IsClass && value == null) { prop.SetValue(obj, null, null); return; }
             switch (propTypeName.ToLower())
             {

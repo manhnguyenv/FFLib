@@ -10,20 +10,30 @@ namespace FFLib.Threading
    [SecurityPermission(SecurityAction.Demand, ControlThread = true)]
    public class SynchronizationContext : System.Threading.SynchronizationContext, IDisposable
    {
-      private BlockingQueue<SendOrPostCallbackItem> mQueue;
-      private StaThread mStaThread;
+      private NonBlockingQueue<SendOrPostCallbackItem> mQueue;
+      //private StaThread mStaThread;
+      private int _mainThreadId;
       public SynchronizationContext()
          : base()
       {
-         mQueue = new BlockingQueue<SendOrPostCallbackItem>();
-         mStaThread = new StaThread(mQueue);
-         mStaThread.Start();
+         _mainThreadId = Thread.CurrentThread.ManagedThreadId;
+         mQueue = new NonBlockingQueue<SendOrPostCallbackItem>();
+         //mStaThread = new StaThread(mQueue);
+        // mStaThread.Start();
       }
+
+      public void DoEvents()
+      {
+          SendOrPostCallbackItem workItem = mQueue.Dequeue();
+          if (workItem != null)
+              workItem.Execute();
+      }
+
 
       public override void Send(SendOrPostCallback d, object state)
       {
          // to avoid deadlock!
-         if (Thread.CurrentThread.ManagedThreadId == mStaThread.ManagedThreadId)
+         if (Thread.CurrentThread.ManagedThreadId == _mainThreadId)
          {            
             d(state);
             return;
@@ -52,7 +62,7 @@ namespace FFLib.Threading
 
       public void Dispose()
       {
-         mStaThread.Stop();
+         //mStaThread.Stop();
                
       }
     
