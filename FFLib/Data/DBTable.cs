@@ -19,6 +19,7 @@ using Sql = System.Data.SqlClient;
 using System.Text.RegularExpressions;
 using FFLib.Data.Attributes;
 using FFLib.Extensions;
+using System.Diagnostics;
 
 namespace FFLib.Data
 {
@@ -111,8 +112,13 @@ namespace FFLib.Data
             if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
             try{
                 _conn.Open();
+                //long t = DateTime.Now.Ticks;
+                //Debug.WriteLine("DB Load Start:" + (DateTime.Now.Ticks - t));
                 reader = sqlCmd.ExecuteReader();
-                return this.Bind(reader);
+                //Debug.WriteLine("DB Reader Done:" + (DateTime.Now.Ticks - t));
+                T[] r = this.Bind(reader);
+                //Debug.WriteLine("Bind done:" + (DateTime.Now.Ticks - t));
+                return r;
             }
             finally {
                 if (reader != null && !reader.IsClosed ) {reader.Close(); reader.Dispose();}
@@ -345,6 +351,55 @@ namespace FFLib.Data
             }
             return result;
         }
+
+        protected static object ConvertValue(object value, MemberInfo target)
+        {
+            object result = null;
+            string targetType ="";
+            switch ( target.MemberType)
+            {
+                case MemberTypes.Property:
+                    {
+                        PropertyInfo prop = target as PropertyInfo;
+                        targetType = prop.PropertyType.Name;
+                        break;
+                    }
+
+                case MemberTypes.Field:
+                    {
+                        FieldInfo prop = target as FieldInfo;
+                        targetType = prop.FieldType.Name;
+                        break;
+                    }
+
+            }
+            switch (targetType.ToLower())
+            {
+                case "string": result = Convert.ToString(value).TrimEnd(); break;
+                case "char": result = Convert.ToChar(value); break;
+                case "byte": result = Convert.ToByte(value); break;
+                case "short": result = Convert.ToByte(value); break;
+                case "int": result = Convert.ToInt32(value); break;
+                case "int16": result = Convert.ToInt16(value); break;
+                case "int32": result = Convert.ToInt32(value); break;
+                case "int64": result = Convert.ToInt64(value); break;
+                case "uint16": result = Convert.ToUInt16(value); break;
+                case "uint32": result = Convert.ToUInt32(value); break;
+                case "uint64": result = Convert.ToUInt64(value); break;
+                case "long": result = Convert.ToInt64(value); break;
+                case "decimal": result = Convert.ToDecimal(value); break;
+                case "single": result = Convert.ToSingle(value); break;
+                case "double": result = Convert.ToDouble(value); break;
+                case "boolean": result = Convert.ToBoolean(value); break;
+                case "bool": result = Convert.ToBoolean(value); break;
+                case "datetime": result = Convert.ToDateTime(value); break;
+                case "guid": result = new Guid(Convert.ToString(value).TrimEnd()); break;
+                case "date": result = Convert.ToDateTime(value); break;
+                default: result = value; break;
+            }
+            return result;
+        }
+
         public string ParseSql(string SqlText)
         {
             return this.ParseSql(SqlText, null);
@@ -444,7 +499,7 @@ namespace FFLib.Data
             string sqlfields = isNew ? "(" + string.Join(",",fields.ToArray()) + ")" : string.Join(",",fields.ToArray());
             string sqlvalues = isNew ? " VALUES (" + string.Join(",", values.ToArray()) + ")" : "";
             string sqlCriteria = isNew ? "" : "\n WHERE #__PK = @pk";
-            string sqlText = this.ParseSql(sqlPrefix + sqlfields + sqlvalues + sqlCriteria);
+            string sqlText = this.ParseSql(sqlPrefix + sqlfields + sqlvalues + sqlCriteria + (isNew ? "; SELECT SCOPE_IDENTITY();" : ""));
 
             sqlParams.Add(new Sql.SqlParameter("@pk", GetPKValue(obj)));
 
@@ -455,8 +510,10 @@ namespace FFLib.Data
             try
             {
                 _conn.Open();
-                //object result = sqlCmd.ExecuteScalar();
-                sqlCmd.ExecuteScalar();
+                object result = sqlCmd.ExecuteScalar();
+                if (isNew) SetPKValue(obj, result);
+                
+                //sqlCmd.ExecuteScalar();
             }
             finally
             {
@@ -497,6 +554,29 @@ namespace FFLib.Data
                     {
                         FieldInfo prop = _pk_memberinfo as FieldInfo;
                         return prop.GetValue(obj);
+                    }
+
+            }
+            return null;
+        }
+
+        public object SetPKValue(T obj, object val)
+        {
+            if (this._pk_memberinfo == null) throw new InvalidOperationException("Primary Key has not been defined");
+            switch (_pk_memberinfo.MemberType)
+            {
+                case MemberTypes.Property:
+                    {
+                        PropertyInfo prop = _pk_memberinfo as PropertyInfo;
+                        prop.SetValue(obj,DBTable<T>.ConvertValue(val,_pk_memberinfo),null);
+                        break;
+                    }
+
+                case MemberTypes.Field:
+                    {
+                        FieldInfo prop = _pk_memberinfo as FieldInfo;
+                        prop.SetValue(obj, DBTable<T>.ConvertValue(val, _pk_memberinfo));
+                        break;
                     }
 
             }

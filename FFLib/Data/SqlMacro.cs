@@ -26,6 +26,13 @@ namespace FFLib.Data
             _tokenprefix = TokenPrefix;
         }
 
+        public SqlMacro(MacroTypes mtype, string Name, object Value)
+        {
+            this.MacroType = mtype;
+            this.Name = Name;
+            this.Value = Value;
+        }
+
         public enum MacroTypes {
             Literal = 0,
             Identifier = 1,
