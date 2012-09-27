@@ -158,6 +158,39 @@ namespace FFLib.Data
             return results;
         }
 
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
+        {
+            return LoadAssocList(sql, null, SqlParams, keyfield);
+        }
+
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield)
+        {
+            Dictionary<string, List<T>> results = new Dictionary<string, List<T>>();
+            if (string.IsNullOrEmpty(keyfield) || keyfield.Trim() == string.Empty) return results;
+            if (string.IsNullOrEmpty(sql) || sql.Trim() == string.Empty) return results;
+
+            T[] rows = this.Load(sql, SqlMacros, SqlParams);
+
+            foreach (T row in rows)
+            {
+                MemberInfo[] mi = row.GetType().GetMember(keyfield, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+                if (mi == null || mi.Length == 0) continue;
+                switch (mi[0].MemberType)
+                {
+                    case MemberTypes.Property:
+                        PropertyInfo pi = mi[0] as PropertyInfo;
+                        this.AddRowAssocList(results, pi, row);
+                        break;
+                    case MemberTypes.Field:
+                        FieldInfo fi = mi[0] as FieldInfo;
+                        this.AddRowAssocList(results, fi, row);
+                        break;
+                    default: continue;
+                }
+            }
+            return results;
+        }
+
         protected virtual void AddRowAssoc(Dictionary<string,T> AssocList, PropertyInfo pi, T row){
             object key = pi.GetValue(row,null);
             if (AssocList.ContainsKey(key.ToString())) return;
@@ -171,6 +204,22 @@ namespace FFLib.Data
             if (AssocList.ContainsKey(key.ToString())) return;
 
             AssocList.Add(key.ToString(), row);
+        }
+
+        protected virtual void AddRowAssocList(Dictionary<string, List<T>> AssocList, PropertyInfo pi, T row)
+        {
+            object key = pi.GetValue(row, null);
+            if (AssocList.ContainsKey(key.ToString())) AssocList[key.ToString()].Add(row);
+            else
+                AssocList.Add(key.ToString(),new List<T>(new T[]{row}));
+        }
+
+        protected virtual void AddRowAssocList(Dictionary<string, List<T>> AssocList, FieldInfo fi, T row)
+        {
+            object key = fi.GetValue(row);
+            if (AssocList.ContainsKey(key.ToString())) AssocList[key.ToString()].Add(row);
+            else
+                AssocList.Add(key.ToString(), new List<T>(new T[] { row }));
         }
 
         public int Execute(string SqlText)
