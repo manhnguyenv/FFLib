@@ -515,7 +515,8 @@ namespace FFLib.Data
                             || (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericTypeDefinition().Equals(typeof(Nullable<>))
                             && Nullable.GetUnderlyingType(pi.PropertyType).Equals(typeof(DateTime))))
                         {
-                            if ((DateTime)pi.GetValue(obj,null) == DateTime.MinValue) pi.SetValue(obj, null,null);
+
+                            if (pi.GetValue(obj,null)!= null && (DateTime)pi.GetValue(obj,null) == DateTime.MinValue) pi.SetValue(obj, null,null);
                         }
 
                         sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(), pi.GetValue(obj, null) == null ? DBNull.Value : pi.GetValue(obj, null)));
