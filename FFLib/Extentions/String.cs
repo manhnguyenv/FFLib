@@ -24,5 +24,15 @@ namespace FFLib.Extensions
             if (Length > self.Length - StartIndex) Length = self.Length - StartIndex;
             return self.Substring(StartIndex, Length);
         }
+
+        public static string[] Cut(this string self, int StartIndex, int Length)
+        {
+            if (StartIndex + Length > self.Length) Length = self.Length - StartIndex;
+
+            string s = self.Substring(StartIndex, Length);
+            string s1 = StartIndex > 0 ? self.Substring(0, StartIndex) : string.Empty;
+            string s2 = StartIndex + Length < self.Length ? self.Substring(StartIndex + Length) : string.Empty;
+            return new string[] {s1 + s2, s};
+        }
     }
 }
