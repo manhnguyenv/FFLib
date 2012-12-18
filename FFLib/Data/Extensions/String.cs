@@ -63,5 +63,6 @@ namespace FFLib.Extensions
                 result.Append(delimiter + list[i].ToString());
             return result.ToString();
         }
+
     }
 }

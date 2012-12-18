@@ -18,6 +18,7 @@ using System.Data;
 using Sql = System.Data.SqlClient;
 using System.Text.RegularExpressions;
 using FFLib.Data.Attributes;
+using FFLib.Data.DBProviders;
 using FFLib.Extensions;
 using System.Diagnostics;
 
@@ -27,13 +28,29 @@ namespace FFLib.Data
     {
         T Load(int ID);
         T[] Load(string sql,Sql.SqlParameter[] SqlParams);
+        T[] Load(string SqlText, SqlMacro[] SqlMacros);
+        T[] Load(string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams);
+        T LoadOne(string SqlText);
+        T LoadOne(string SqlText, System.Data.SqlClient.SqlParameter[] paramList);
         Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter[] SqlParams, string key);
+        Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield);
+        Dictionary<string, List<T>> LoadAssocList(string sql, Sql.SqlParameter[] SqlParams, string keyfield);
+        int Execute(string SqlText, Sql.SqlParameter[] SqlParams);
+        int Execute(string SqlText, SqlMacro[] SQLMacros);
+        int Execute(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams);
+        object ExecuteScalar(string SqlText);
+        object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros);
+        object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams);
+        string ParseSql(string SqlText);
+        string ParseSql(string SqlText, SqlMacro[] SQLMacros);
         void Save(T obj);
     }
 
     public class DBTable<T> : IDBTable<T> where T : class, new()
     {
-        protected DBConnection _conn;
+        protected IDBConnection _conn = null;
+        protected IDBProvider _dbProvider = null;
+        protected IDBContext _dbContext = null;
         protected string _pk = null;
         protected MemberInfo _pk_memberinfo = null;
         protected string _tableName = null;
@@ -41,34 +58,31 @@ namespace FFLib.Data
         //static Regex subTableNameRegex = new Regex("#__TableName", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         //static Regex subPKRegex = new Regex("#__PK", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public DBTable(DBConnection Conn) :this(Conn,null)
-        {}
+        public DBTable(IDBConnection Conn)
+            : this(Conn, null)
+        { }
 
-        public DBTable(DBConnection Conn, string TableName)
+        public DBTable(IDBConnection Conn, string tableName)
             : base()
         {
             _conn = Conn;
-            
-            bool attr_found = false;
-            MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
-            foreach (MemberInfo mi in miList)
-            {
-                foreach (Attribute attr in mi.GetCustomAttributes(typeof(Attributes.PrimaryKeyAttribute), false))
-                {
-                    if (attr is Attributes.PrimaryKeyAttribute) { this._pk_memberinfo = mi; this._pk = mi.Name; attr_found = true; break; }
-                }
-                if (attr_found) break;
-            }
-            attr_found = false;
-
-            if (!string.IsNullOrEmpty(TableName)) { _tableName = TableName; return; }
-            foreach (Attribute attr in typeof(T).GetCustomAttributes(typeof(Attributes.DBTableNameAttribute), false))
-            {
-                if (attr is Attributes.DBTableNameAttribute) { this._tableName = ((Attributes.DBTableNameAttribute)attr).TableName; attr_found = true; break; }
-            }
+            DBTableHelper.TableDef tableDef = DBTableHelper.GetTableDef<T>(tableName);
+            _pk = tableDef.PK;
+            _pk_memberinfo = tableDef.PK_MemberInfo;
+            _tableName = tableDef.TableName;
+            _dbProvider = _conn.dbProvider;
         }
 
-        public DBConnection DBConnection { get { return _conn; } }
+        public DBTable(IDBContext dbContext, IDBConnection Conn)
+            : this(Conn, null){}
+
+        public DBTable(IDBContext dbContext, IDBConnection Conn, string tableName)
+            : this(Conn, tableName)
+        {
+            _dbContext = dbContext;
+        }
+
+        public IDBConnection DBConnection { get { return _conn; } }
 
         public virtual T Load(int ID)
         {
@@ -107,14 +121,14 @@ namespace FFLib.Data
         }
 
         public virtual T[] Load(string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) {
-            Sql.SqlDataReader reader = null;
-            Sql.SqlCommand sqlCmd = new Sql.SqlCommand(this.ParseSql(SqlText,SqlMacros), _conn.Connection);
-            if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
+            System.Data.IDataReader reader = null;
+           // Sql.SqlCommand sqlCmd = new Sql.SqlCommand(this.ParseSql(SqlText,SqlMacros), _conn.Connection);
+           // if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
             try{
                 _conn.Open();
                 //long t = DateTime.Now.Ticks;
                 //Debug.WriteLine("DB Load Start:" + (DateTime.Now.Ticks - t));
-                reader = sqlCmd.ExecuteReader();
+                reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams );
                 //Debug.WriteLine("DB Reader Done:" + (DateTime.Now.Ticks - t));
                 T[] r = this.Bind(reader);
                 //Debug.WriteLine("Bind done:" + (DateTime.Now.Ticks - t));
@@ -158,6 +172,39 @@ namespace FFLib.Data
             return results;
         }
 
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
+        {
+            return LoadAssocList(sql, null, SqlParams, keyfield);
+        }
+
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield)
+        {
+            Dictionary<string, List<T>> results = new Dictionary<string, List<T>>();
+            if (string.IsNullOrEmpty(keyfield) || keyfield.Trim() == string.Empty) return results;
+            if (string.IsNullOrEmpty(sql) || sql.Trim() == string.Empty) return results;
+
+            T[] rows = this.Load(sql, SqlMacros, SqlParams);
+
+            foreach (T row in rows)
+            {
+                MemberInfo[] mi = row.GetType().GetMember(keyfield, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+                if (mi == null || mi.Length == 0) continue;
+                switch (mi[0].MemberType)
+                {
+                    case MemberTypes.Property:
+                        PropertyInfo pi = mi[0] as PropertyInfo;
+                        this.AddRowAssocList(results, pi, row);
+                        break;
+                    case MemberTypes.Field:
+                        FieldInfo fi = mi[0] as FieldInfo;
+                        this.AddRowAssocList(results, fi, row);
+                        break;
+                    default: continue;
+                }
+            }
+            return results;
+        }
+
         protected virtual void AddRowAssoc(Dictionary<string,T> AssocList, PropertyInfo pi, T row){
             object key = pi.GetValue(row,null);
             if (AssocList.ContainsKey(key.ToString())) return;
@@ -171,6 +218,22 @@ namespace FFLib.Data
             if (AssocList.ContainsKey(key.ToString())) return;
 
             AssocList.Add(key.ToString(), row);
+        }
+
+        protected virtual void AddRowAssocList(Dictionary<string, List<T>> AssocList, PropertyInfo pi, T row)
+        {
+            object key = pi.GetValue(row, null);
+            if (AssocList.ContainsKey(key.ToString())) AssocList[key.ToString()].Add(row);
+            else
+                AssocList.Add(key.ToString(),new List<T>(new T[]{row}));
+        }
+
+        protected virtual void AddRowAssocList(Dictionary<string, List<T>> AssocList, FieldInfo fi, T row)
+        {
+            object key = fi.GetValue(row);
+            if (AssocList.ContainsKey(key.ToString())) AssocList[key.ToString()].Add(row);
+            else
+                AssocList.Add(key.ToString(), new List<T>(new T[] { row }));
         }
 
         public int Execute(string SqlText)
@@ -196,17 +259,15 @@ namespace FFLib.Data
         /// <returns>int : number of rows affected. this may be altered by sql statements such as nocount</returns>
         public int Execute(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
         {
-            Sql.SqlDataReader reader = null;
-            Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
-            if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
+            //Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
+            //if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
             try
             {
                 _conn.Open();
-                return sqlCmd.ExecuteNonQuery();
+                return _dbProvider.ExecuteNonQuery(_conn, this.ParseSql(SqlText, SQLMacros), SqlParams);
             }
             finally
             {
-                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
                 if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
             }
         }
@@ -234,17 +295,15 @@ namespace FFLib.Data
         /// <returns>object : the first value of the first row of the resultset</returns>
         public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
         {
-            Sql.SqlDataReader reader = null;
-            Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
-            if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
+            //Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
+            //if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
             try
             {
                 _conn.Open();
-                return sqlCmd.ExecuteScalar();
+                return _dbProvider.ExecuteScalar<object>(_conn, this.ParseSql(SqlText, SQLMacros), SqlParams);
             }
             finally
             {
-                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
                 if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
             }
         }
@@ -257,7 +316,6 @@ namespace FFLib.Data
             if (reader == null || reader.IsClosed) return rows.ToArray();
 
             MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
-            //Dictionary<string, MemberInfo> miIndex = mi.ToDictionary<MemberInfo,string>(k => k.Name);
             Dictionary<string,int> columnIdx = new Dictionary<string,int>();
             
                 for (int i = 0; i < reader.FieldCount; i++)
@@ -283,12 +341,16 @@ namespace FFLib.Data
                         }
                     }
                     rows.Add(dto);
+                    if (_dbContext != null) _dbContext.UpdateTableCache(_tableName, this.GetPKValue(dto).ToString(),dto);
                 }
             }
             finally
             {
-                reader.Close();
-                reader.Dispose();
+                if (reader != null)
+                {
+                    reader.Close();
+                    reader.Dispose();
+                }
             }
             return rows.ToArray();
         }
@@ -502,25 +564,30 @@ namespace FFLib.Data
             string sqlCriteria = isNew ? "" : "\n WHERE #__PK = @pk";
             string sqlText = this.ParseSql(sqlPrefix + sqlfields + sqlvalues + sqlCriteria + (isNew ? "; SELECT SCOPE_IDENTITY();" : ""));
 
-            sqlParams.Add(new Sql.SqlParameter("@pk", GetPKValue(obj)));
+            sqlParams.Add(new Sql.SqlParameter("@pk", (int)GetPKValue(obj)));
 
-            Sql.SqlCommand sqlCmd = _conn.CreateCommand(sqlText); 
-            sqlCmd.CommandType = CommandType.Text;
-          
-            sqlCmd.Parameters.AddRange(sqlParams.ToArray());
             try
             {
-                _conn.Open();
-                object result = sqlCmd.ExecuteScalar();
-                if (isNew) SetPKValue(obj, result);
-                
-                //sqlCmd.ExecuteScalar();
+                if (isNew)
+                {
+                    var result = _dbProvider.DBInsert<int>(_conn, sqlText, sqlParams.ToArray());
+                    SetPKValue(obj, result);
+                }
+                else
+                {
+                    _dbProvider.DBUpdate(_conn, sqlText, sqlParams.ToArray());
+                }
+                //refresh from DB
+                obj = this.Load((int)this.GetPKValue(obj));
             }
             finally
             {
                 if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
             }
+
         }
+
+        
 
         public bool IsNew(T obj){
             bool isNew = false;
