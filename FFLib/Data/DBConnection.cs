@@ -13,23 +13,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FFLib.Data.DBProviders;
 
 namespace FFLib.Data
 {
-    public class DBConnection : System.Data.IDbConnection
+
+    public class DBConnection : IDBConnection
     {
-        System.Data.SqlClient.SqlConnection  _conn;
+        System.Data.IDbConnection  _conn;
+        FFLib.Data.DBProviders.IDBProvider _dbProvider;
         DBTransaction _trx;
         int _trxCnt = 0;
 
 
-        public DBConnection(string ConnectionString)
+        public DBConnection(IDBProvider dbProvider, IDBConnectionString ConnectionString)
         {
-            CommandTimeout = 30;
-            _conn = new System.Data.SqlClient.SqlConnection(ConnectionString);
+            this.CommandTimeout = 30;
+            this._dbProvider = dbProvider;
+            _conn = (System.Data.IDbConnection)_dbProvider.CreateConnection(ConnectionString.GetValue());
         }
 
-        internal System.Data.SqlClient.SqlConnection Connection { get { return _conn; } }
+        public DBConnection(IDBProvider dbProvider, string ConnectionString)
+        {
+            this.CommandTimeout = 30;
+            this._dbProvider = dbProvider;
+            _conn = (System.Data.IDbConnection)_dbProvider.CreateConnection(ConnectionString);
+        }
+
+        //internal System.Data.SqlClient.SqlConnection Connection { get { return _conn; } }
+        public DBProviders.IDBProvider dbProvider { get { return _dbProvider; } }
 
         public void Open()
         {
@@ -123,9 +135,9 @@ namespace FFLib.Data
             return this.CreateCommand(null);
         }
 
-        public System.Data.SqlClient.SqlCommand CreateCommand(string CmdText)
+        public System.Data.IDbCommand CreateCommand(string CmdText)
         {
-            System.Data.SqlClient.SqlCommand sqlCmd = new System.Data.SqlClient.SqlCommand(CmdText);
+            System.Data.IDbCommand sqlCmd = _dbProvider.CreateCommand(_conn,CmdText);
             sqlCmd.Connection = _conn;
             sqlCmd.CommandTimeout = this.CommandTimeout;
             if (InTrx) sqlCmd.Transaction = (System.Data.SqlClient.SqlTransaction)_trx.Transaction;
