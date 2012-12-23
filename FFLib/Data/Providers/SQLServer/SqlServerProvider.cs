@@ -56,8 +56,15 @@ namespace FFLib.Data.DBProviders
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
-            U result = (U)sqlCmd.ExecuteScalar();
-
+            object rv = null; //temporary reference to executeScalar return value
+            U result;
+            try
+            {
+                rv = sqlCmd.ExecuteScalar();
+                result = (U)rv;
+            } catch (InvalidCastException) {
+                throw new InvalidCastException("Cannot Cast DB Type of:" + rv.GetType().ToString() + " to expected type of:" + typeof(U).ToString());
+            }
             return result;
         }
 
