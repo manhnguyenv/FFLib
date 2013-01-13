@@ -308,6 +308,11 @@ namespace FFLib.Data
             }
         }
 
+        public U ExecuteScalar<U>(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
+        {
+            return (U) ExecuteScalar(SqlText, SQLMacros, SqlParams);
+        }
+
         protected virtual T[] Bind(IDataReader reader)
         {
             List<T> rows = new List<T>();
@@ -570,7 +575,7 @@ namespace FFLib.Data
             {
                 if (isNew)
                 {
-                    var result = _dbProvider.DBInsert<int>(_conn, sqlText, sqlParams.ToArray());
+                    var result = _dbProvider.DBInsert<decimal>(_conn, sqlText, sqlParams.ToArray());
                     SetPKValue(obj, result);
                 }
                 else
