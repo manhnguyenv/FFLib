@@ -370,6 +370,7 @@ namespace FFLib.Data
                         PropertyInfo prop = m as PropertyInfo;
                         propTypeName = prop.PropertyType.Name;
                         if (prop.PropertyType.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(prop.PropertyType).Name; }
+                        if (prop.PropertyType.IsGenericType && propTypeName != null && value == null) { prop.SetValue(obj, null, null); return; }
                         if (prop.PropertyType.IsClass && value == null) { prop.SetValue(obj, null, null); return; }
                         prop.SetValue(obj, DBTable<T>.ConvertFieldValue(propTypeName,value), null);
                     }
@@ -379,6 +380,7 @@ namespace FFLib.Data
                         FieldInfo prop = m as FieldInfo;
                         propTypeName = prop.FieldType.Name;
                         if (prop.FieldType.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(prop.FieldType).Name; }
+                        if (prop.FieldType.IsGenericType && propTypeName != null && value == null) { prop.SetValue(obj, null); return; }
                         if (prop.FieldType.IsClass && value == null) { prop.SetValue(obj, null); return; }
                         prop.SetValue(obj, DBTable<T>.ConvertFieldValue(propTypeName,value));
                     }
