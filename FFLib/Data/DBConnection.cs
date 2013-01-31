@@ -78,7 +78,7 @@ namespace FFLib.Data
         }
         public DBTransaction BeginTransaction()
         {
-            _conn.Open();
+            if (_conn.State == System.Data.ConnectionState.Closed) _conn.Open();
             if (_trx == null) _trx = new DBTransaction(_conn.BeginTransaction(), this);
             _trxCnt++;
             return _trx;
