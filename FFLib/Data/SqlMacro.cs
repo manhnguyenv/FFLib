@@ -39,6 +39,8 @@ namespace FFLib.Data
             Keyword = 3
         }
 
+        protected object _value;
+
         private string _tokenprefix = @"##_";
 
         public virtual MacroTypes MacroType { get; set; }
@@ -49,7 +51,7 @@ namespace FFLib.Data
         /// </summary>
         public virtual string Token { get { return  _tokenprefix + Name; } }
 
-        public virtual object Value { get; set; }
+        public virtual object Value { get { return _value; } set { _value = value; } }
 
         public virtual bool IsNumeric() { return false; }
 
@@ -63,8 +65,9 @@ namespace FFLib.Data
     {
         public SqlMacro():base() { }
         public SqlMacro(string TokenPrefix) : base(TokenPrefix) { }
+        public SqlMacro(MacroTypes mtype, string Name, T Value) : base(mtype, Name, Value) { }
 
-        public new virtual T Value { get; set; }
+        public new virtual T Value { get { return (T)_value; } set { _value = value; } }
 
         public override bool IsNumeric() {
             if (Value is int || Value is long || Value is short || Value is bool) return true;
