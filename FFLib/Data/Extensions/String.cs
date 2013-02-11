@@ -64,5 +64,14 @@ namespace FFLib.Extensions
             return result.ToString();
         }
 
+        public static string JsonEscape(this string self)
+        {
+            return self.Replace(@"""", @"\""");
+        }
+
+        public static string JsonQuote(this string self)
+        {
+            return "\"" + self.JsonEscape() + "\"";
+        }
     }
 }
