@@ -36,6 +36,7 @@ namespace FFLib.Extensions
 
         public static string SqlQuote(this string self)
         {
+            if (self == null) return "NULL";
             return "'"+self.Replace("'", "''")+"'";
         }
 

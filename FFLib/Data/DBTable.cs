@@ -205,6 +205,43 @@ namespace FFLib.Data
             return results;
         }
 
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) where R:struct
+        {
+            System.Data.IDataReader reader = null;
+            List<R> r = new List<R>();
+            // Sql.SqlCommand sqlCmd = new Sql.SqlCommand(this.ParseSql(SqlText,SqlMacros), _conn.Connection);
+            // if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
+            try
+            {
+                _conn.Open();
+                //long t = DateTime.Now.Ticks;
+                //Debug.WriteLine("DB Load Start:" + (DateTime.Now.Ticks - t));
+                reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams);
+                //Debug.WriteLine("DB Reader Done:" + (DateTime.Now.Ticks - t));
+                //T[] r = this.Bind(reader);
+                while (reader.Read())
+                {
+                    object t = reader.GetValue(index);
+                    if (t == DBNull.Value && typeof(R).IsValueType)
+                    {
+                        R q = new R(); //create a min value struct of type R
+                        r.Add(q);
+                    }
+                    else
+                    {
+                        r.Add((R)t);
+                    }
+                }
+                //Debug.WriteLine("Bind done:" + (DateTime.Now.Ticks - t));
+                return r.ToArray();
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+        }
+
         protected virtual void AddRowAssoc(Dictionary<string,T> AssocList, PropertyInfo pi, T row){
             object key = pi.GetValue(row,null);
             if (AssocList.ContainsKey(key.ToString())) return;
