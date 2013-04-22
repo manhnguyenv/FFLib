@@ -347,7 +347,9 @@ namespace FFLib.Data
 
         public U ExecuteScalar<U>(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
         {
-            return (U) ExecuteScalar(SqlText, SQLMacros, SqlParams);
+            object o = ExecuteScalar(SqlText, SQLMacros, SqlParams);
+            if ( o == null || o == DBNull.Value) return default(U);
+            return (U)o; 
         }
 
         protected virtual T[] Bind(IDataReader reader)
