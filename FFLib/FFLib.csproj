@@ -67,6 +67,8 @@
     <Compile Include="Data\DBConnectionString.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="Ioc_Container.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LoggerFactory.cs" />
     <Compile Include="Threading\BlockingQueue.cs" />
     <Compile Include="Threading\NonBlockingQueue.cs" />
     <Compile Include="Threading\SendOrPostCallbackItem.cs" />
