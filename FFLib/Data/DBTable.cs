@@ -371,16 +371,20 @@ namespace FFLib.Data
                     T dto = new T();
                     foreach (MemberInfo m in miList)
                     {
-                        if (!columnIdx.ContainsKey(m.Name)) continue;
+                        string mName = m.Name;
+                        object[] attrs = m.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attrs != null && attrs.Length > 0) mName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        if (!columnIdx.ContainsKey(mName) && !columnIdx.ContainsKey(m.Name)) continue;
+                        mName = columnIdx.ContainsKey(mName) ? mName : m.Name;
                         switch (m.MemberType)
                         {
                             case MemberTypes.Field:
                                 FieldInfo fi = m as FieldInfo;
-                                DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[m.Name]) == DBNull.Value ? null : reader.GetValue(columnIdx[m.Name]));
+                                DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : reader.GetValue(columnIdx[mName]));
                                 break;
                             case MemberTypes.Property:
                                 PropertyInfo pi = m as PropertyInfo;
-                                if (pi.CanWrite) DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[m.Name]) == DBNull.Value ? null : reader.GetValue(columnIdx[m.Name]));
+                                if (pi.CanWrite) DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : reader.GetValue(columnIdx[mName]));
                                 break;
                         }
                     }
@@ -560,14 +564,17 @@ namespace FFLib.Data
                 switch (m.MemberType ){
                     case MemberTypes.Property:{
                         PropertyInfo pi = m as PropertyInfo;
+                        string propName = pi.Name;
                         object[] attrs = pi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
                         if (attrs != null && attrs.Length > 0) continue;
+                        attrs = pi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attrs != null && attrs.Length > 0) propName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
                         pidx++;
-                        if (isNew){ 
-                            fields.Add("["+pi.Name+"]");
+                        if (isNew){
+                            fields.Add("[" + propName + "]");
                             values.Add("@p" + pidx.ToString()); 
                         } else {
-                            fields.Add("["+pi.Name + "] = @p" + pidx.ToString());
+                            fields.Add("[" + propName + "] = @p" + pidx.ToString());
                         }
 
                         if (pi.PropertyType.Equals(typeof(DateTime))
@@ -582,14 +589,17 @@ namespace FFLib.Data
                     break;}
                     case MemberTypes.Field:{
                         FieldInfo fi = m as FieldInfo;
+                        string fieldName = fi.Name;
                         object[] attrs = fi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
                         if (attrs != null && attrs.Length > 0) continue;
+                        attrs = fi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attrs != null && attrs.Length > 0) fieldName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
                         pidx++;
-                        if (isNew){ 
-                            fields.Add("["+fi.Name+"]");
+                        if (isNew){
+                            fields.Add("[" + fieldName + "]");
                             values.Add("@p" + pidx.ToString());
                         } else {
-                            fields.Add("["+fi.Name + "] = @p" + pidx.ToString());
+                            fields.Add("[" + fieldName + "] = @p" + pidx.ToString());
                         }
                         
                         if (fi.FieldType.Equals(typeof(DateTime)) 

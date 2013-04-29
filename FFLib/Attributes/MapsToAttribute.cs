@@ -16,7 +16,7 @@ using System.Text;
 
 namespace FFLib.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field )]
     public class MapsToAttribute : Attribute
     {
 

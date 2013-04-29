@@ -50,7 +50,13 @@ namespace FFLib.Data
             {
                 foreach (Attribute attr in mi.GetCustomAttributes(typeof(Attributes.PrimaryKeyAttribute), false))
                 {
-                    if (attr is Attributes.PrimaryKeyAttribute) { _pk_memberinfo = mi; _pk = mi.Name; attr_found = true; break; }
+                    if (attr is Attributes.PrimaryKeyAttribute) 
+                    {
+                        _pk_memberinfo = mi; _pk = mi.Name; attr_found = true; 
+                        foreach (Attribute attr2 in mi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false))
+                            if (attr2 is FFLib.Attributes.MapsToAttribute) { _pk = ((FFLib.Attributes.MapsToAttribute)attr2).PropertyName; break; }
+                        break; 
+                    }
                 }
                 if (attr_found) break;
             }
