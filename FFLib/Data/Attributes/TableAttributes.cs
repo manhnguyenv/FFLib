@@ -28,6 +28,12 @@ namespace FFLib.Data.Attributes
         public NotPersistedAttribute() { }
     }
 
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class DBIdentity : System.Attribute
+    {
+        public DBIdentity() { }
+    }
+
     [AttributeUsage(AttributeTargets.Class )]
     public class DBTableNameAttribute : System.Attribute
     {

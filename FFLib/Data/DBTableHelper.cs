@@ -9,6 +9,9 @@
  * Notification of license selection is not required and will be infered based on applicability.
  * Contributions to FFLib requires a contributor grant on file with Fast Forward, LLC.
 ********************************************************/
+//disable Missing XML documentation warning
+#pragma warning disable 1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

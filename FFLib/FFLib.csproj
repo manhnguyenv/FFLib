@@ -36,14 +36,19 @@
     <Reference Include="AntiXssLibrary">
       <HintPath>..\packages\AntiXSS.4.2.1\lib\net40\AntiXssLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\packages\HtmlAgilityPack.1.4.3\lib\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="BoneSoft.CSS">
+      <HintPath>..\packages\BoneSoft\BoneSoft.CSS.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.0.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ZPDev\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizationLibrary">
       <HintPath>..\packages\AntiXSS.4.2.1\lib\net40\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,6 +58,11 @@
   <ItemGroup>
     <Compile Include="Attributes\HtmlEncodingAttribute.cs" />
     <Compile Include="Attributes\MapsToAttribute.cs" />
+    <Compile Include="CSS\Convert.cs" />
+    <Compile Include="CSS\CSSParser.cs" />
+    <Compile Include="CSS\CSSResolver.cs" />
+    <Compile Include="CSS\CSSClasses.cs" />
+    <Compile Include="CSS\Util.cs" />
     <Compile Include="Data\Attributes\TableAttributes.cs" />
     <Compile Include="Data\DBConnection.cs" />
     <Compile Include="Data\DBContext.cs" />
@@ -67,6 +77,12 @@
     <Compile Include="Data\SqlMacro.cs" />
     <Compile Include="Data\DBConnectionString.cs" />
     <Compile Include="Extensions\String.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\FuncResult.cs" />
     <Compile Include="Ioc_Container.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LoggerService.cs" />
@@ -85,7 +101,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CSS\base.css" />
     <Content Include="License.txt" />
+    <Content Include="Resources\base.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

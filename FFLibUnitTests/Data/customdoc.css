@@ -1,0 +1,230 @@
+/*************************
+/* Do not remove the Auto-Generated block
+/*************************
+/* Start Auto-Generated */
+/* !!! THIS BLOCK HAS BEEN AUTO-GENERATED. CHANGES WILL BE OVERWRITTEN !!! */
+
+#doc-view h1 {
+    background-color:transparent;
+    color:#3a0;
+    font-family:'Calibri';
+    font-size:30px;
+    font-weight:bold;
+    border-bottom: 1px solid #3a0;
+}
+
+#doc-view h2 {
+    background-color:transparent;
+    color:#a03;
+    font-family:'Calibri';
+    font-size:26px;
+    font-weight:bold;
+    border-bottom: 1px solid #a03;
+}
+
+#doc-view h3 {
+    background-color:transparent;
+    color:#33f;
+    font-family:'Calibri';
+    font-size:22px;
+    font-weight:bold;
+    border-bottom: 1px solid #33f;
+}
+
+#doc-view h4 {
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:18px;
+    font-weight:bold;
+    border-bottom: 1px solid #111;
+}
+
+#doc-view h5 {
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+    
+}
+
+#doc-view h6 {
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:lighter;
+    
+}
+
+#doc-view, #doc-view p
+{
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+
+#doc-view ol
+{
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+    margin-left:1.5em;
+}
+
+#doc-view ul
+{
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+    margin-left:1.5em;
+}
+#doc-view .textPage table tr.Heading, #doc-view .textPage table tr.heading,
+#doc-view table.general tr.Heading, #doc-view table.general tr.heading {
+	background-color:#369;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+#doc-view .textPage table td.Heading, #doc-view .textPage table td.heading,
+#doc-view table.general td.Heading, #doc-view table.general td.heading {
+	background-color:#369;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+
+#doc-view .textPage table th.Heading, #doc-view .textPage table th.heading,
+#doc-view table.general th.Heading, #doc-view table.general th.heading {
+	background-color:#369;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+#doc-view .textPage table tr.sHeading, #doc-view .textPage table tr.sheading,
+#doc-view table.general tr.sHeading, #doc-view table.general tr.sheading {
+    background-color:#69c;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+#doc-view .textPage table td.sHeading, #doc-view .textPage table td.sheading,
+#doc-view table.general td.sHeading, #doc-view table.general td.sheading {
+    background-color:#69c;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+#doc-view .textPage table th.sHeading, #doc-view .textPage table th.sheading,
+#doc-view table.general th.sHeading, #doc-view table.general th.sheading {
+    background-color:#69c;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+#doc-view .textPage table tr.subsubheading, #doc-view .textPage table td.subsubheading,
+#doc-view table.general tr.subsubheading, #doc-view table.general td.subsubheading ,
+#doc-view table.general th.subsubheading, #doc-view table.textPage th.subsubheading  {
+	background-color:#9cf;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+#doc-view .textPage table td.alt1, #doc-view .textPage table tr.alt1
+#doc-view table.general td.alt1, #doc-view table.general tr.alt1 {
+	background-color: transparent;
+}
+#doc-view .textPage table td.alt2, #doc-view .textPage table tr.alt2,
+#doc-view table.general td.alt2, #doc-view table.general tr.alt2 {
+	background-color: #eed;
+}
+#doc-view .textPage table tfoot,
+#doc-view table.general tfoot
+{
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+
+#doc-view table.figure td.heading, #doc-view table.figure td.Heading {
+	background-color:#369;
+    color:#fff;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+
+#doc-view table.figure td.alt1, #doc-view table.figure tr.alt1 {
+	background-color: transparent;
+}
+
+#doc-view table.figure td.alt2, #doc-view table.figure tr.alt2 {
+	background-color: #eed;
+}
+
+#doc-view table.figure tfoot
+{
+    background-color:transparent;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+
+#doc-view #viewDef 
+{
+    background-color:#adf;
+    color:#111;
+    font-family:'Calibri';
+    font-size:16px;
+    font-weight:normal;
+}
+
+/* End Auto-Generated */
+
+/*****************************/
+/*  Client custom css here   */
+/*****************************/
+
+#sectionBanner {display:block;}
+.pdfMode #sectionBanner {display:block;}
+
+
+/* hr Horizontal rule used for multiple search results in text */
+hr  {
+	height:10px;
+    width:50%;
+    background:#8a8a8a;
+    margin: 0px 150px 0px 150px; 
+}
+
+#doc-view ol {padding:0;}
+#doc-view table.figure td.heading, #doc-view table.figure td.Heading {
+border: 1px solid black;
+}
+
+#doc-view table.general td {
+ font-size:10pt;
+ font-family:Calibri;
+}
+
+
+
+
+

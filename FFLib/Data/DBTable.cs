@@ -546,7 +546,7 @@ namespace FFLib.Data
             if (obj is ISupportsIsDirty) isDirty = ((ISupportsIsDirty)obj).IsDirty();
             if (!isDirty) return;
       
-            if (_pk_memberinfo == null) return;
+            //if (_pk_memberinfo == null) return;
 
             isNew = this.IsNew(obj);
 
@@ -618,7 +618,7 @@ namespace FFLib.Data
             string sqlfields = isNew ? "(" + string.Join(",",fields.ToArray()) + ")" : string.Join(",",fields.ToArray());
             string sqlvalues = isNew ? " VALUES (" + string.Join(",", values.ToArray()) + ")" : "";
             string sqlCriteria = isNew ? "" : "\n WHERE #__PK = @pk";
-            string sqlText = this.ParseSql(sqlPrefix + sqlfields + sqlvalues + sqlCriteria + (isNew ? "; SELECT SCOPE_IDENTITY();" : ""));
+            string sqlText = this.ParseSql(sqlPrefix + sqlfields + sqlvalues + sqlCriteria + (isNew & this.PK_IsDBIdentity ? "; SELECT SCOPE_IDENTITY();" : ""));
 
             sqlParams.Add(new Sql.SqlParameter("@pk", (int)GetPKValue(obj)));
 
@@ -626,8 +626,8 @@ namespace FFLib.Data
             {
                 if (isNew)
                 {
-                    var result = _dbProvider.DBInsert<decimal>(_conn, sqlText, sqlParams.ToArray());
-                    SetPKValue(obj, result);
+                    var result = _dbProvider.DBInsert<decimal?>(_conn, sqlText, sqlParams.ToArray());
+                    if (this.PK_IsDBIdentity) SetPKValue(obj, result);
                 }
                 else
                 {
@@ -643,11 +643,22 @@ namespace FFLib.Data
 
         }
 
-        
+
+        public bool PK_IsDBIdentity
+        {
+            get
+            {
+                if (_pk_memberinfo == null) return false;
+                object[] attrs = _pk_memberinfo.GetCustomAttributes(typeof(FFLib.Data.Attributes.DBIdentity), false);
+                if (attrs != null && attrs.Length > 0) return true;
+                return false;
+            }
+        }
 
         public bool IsNew(T obj){
             bool isNew = false;
-            if (obj is ISupportsIsNew) isNew = ((ISupportsIsNew)obj).IsNew();
+            if (obj is ISupportsIsNew) return ((ISupportsIsNew)obj).IsNew();
+            if (_pk_memberinfo == null) return false;
             switch (_pk_memberinfo.MemberType)
                 {
                     case MemberTypes.Property:
@@ -692,6 +703,7 @@ namespace FFLib.Data
                 case MemberTypes.Property:
                     {
                         PropertyInfo prop = _pk_memberinfo as PropertyInfo;
+                        if (prop.PropertyType.IsValueType && (val == DBNull.Value || val == null) ) throw new ArgumentOutOfRangeException("Primary Key Cannot be set to Null or Empty");
                         prop.SetValue(obj,DBTable<T>.ConvertValue(val,_pk_memberinfo),null);
                         break;
                     }
@@ -699,6 +711,7 @@ namespace FFLib.Data
                 case MemberTypes.Field:
                     {
                         FieldInfo prop = _pk_memberinfo as FieldInfo;
+                        if (prop.FieldType.IsValueType && val == DBNull.Value) throw new ArgumentOutOfRangeException("Primary Key Cannot be set to Null or Empty");
                         prop.SetValue(obj, DBTable<T>.ConvertValue(val, _pk_memberinfo));
                         break;
                     }

@@ -44,6 +44,12 @@ namespace FFLib.Logging
         }
 
         /// <summary>
+        /// Returns the current initialization state of the logger
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsInitialized(){if (_logger !=null || _resolver != null) return true; else return false;}
+
+        /// <summary>
         /// Get an ILogger Instance by using initilized ILogger or by using Resolver
         /// </summary>
         /// <returns>ILogger</returns>

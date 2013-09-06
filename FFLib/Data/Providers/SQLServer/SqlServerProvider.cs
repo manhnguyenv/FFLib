@@ -61,6 +61,7 @@ namespace FFLib.Data.DBProviders
             try
             {
                 rv = sqlCmd.ExecuteScalar();
+                if (rv == DBNull.Value) return default(U);
                 result = (U)rv;
             } catch (InvalidCastException) {
                 throw new InvalidCastException("Cannot Cast DB Type of:" + rv.GetType().ToString() + " to expected type of:" + typeof(U).ToString());

@@ -99,6 +99,7 @@ namespace FFLib.Data
             if (_trx == null) { _trxCnt = 0; return; }
             _trx.Transaction.Commit();
             if (_trxCnt > 0) _trxCnt--;
+            if (_trxCnt < 1) _trx = null;
         }
 
         public void Rollback()
@@ -106,6 +107,7 @@ namespace FFLib.Data
             if (_trx == null) { _trxCnt = 0; return; }
             _trx.Transaction.Rollback();
             _trxCnt = 0;
+            _trx = null;
         }
 
         public void ChangeDatabase(string databaseName)

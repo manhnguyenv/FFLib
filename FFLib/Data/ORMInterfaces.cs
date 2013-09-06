@@ -16,12 +16,12 @@ using System.Text;
 
 namespace FFLib.Data
 {
-    interface ISupportsIsDirty
+    public interface ISupportsIsDirty
     {
         bool IsDirty();
     }
 
-    interface ISupportsIsNew
+    public interface ISupportsIsNew
     {
         bool IsNew();
     }
