@@ -48,6 +48,11 @@ namespace FFLib.Extensions
             return escapeRegEx.Replace(self.Replace("'", "''"), @"$1");
         }
 
+        public static string EscapeSqlList(this string[] list, bool quote)
+        {
+            return DBStringHelper.EscapeSqlList(list, quote);
+        }
+
         public static string RegexEscape(this string self)
         {
             if (self == null || string.IsNullOrEmpty(self)) return self;
@@ -73,6 +78,17 @@ namespace FFLib.Extensions
         public static string JsonQuote(this string self)
         {
             return "\"" + self.JsonEscape() + "\"";
+        }
+    }
+
+    public static class DBStringHelper{
+
+        public static string EscapeSqlList(string[] list, bool quote)
+        {
+            if (list == null || list.Length == 0) return string.Empty;
+            for(int i = 0; i < list.Length; i++)
+                list[i] = list[i].SqlEscape(quote);
+            return string.Join(",", list);
         }
     }
 }

@@ -58,19 +58,23 @@ namespace FFLib.Data
         //static Regex subTableNameRegex = new Regex("#__TableName", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         //static Regex subPKRegex = new Regex("#__PK", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        public int CommandTimeout { get; set; }
+
         public DBTable(IDBConnection Conn)
             : this(Conn, null)
-        { }
+        {  }
 
         public DBTable(IDBConnection Conn, string tableName)
             : base()
         {
+            CommandTimeout = 30;
             _conn = Conn;
             DBTableHelper.TableDef tableDef = DBTableHelper.GetTableDef<T>(tableName);
             _pk = tableDef.PK;
             _pk_memberinfo = tableDef.PK_MemberInfo;
             _tableName = tableDef.TableName;
             _dbProvider = _conn.dbProvider;
+            _dbProvider.CommandTimeout = CommandTimeout;
         }
 
         public DBTable(IDBContext dbContext, IDBConnection Conn)
@@ -128,6 +132,7 @@ namespace FFLib.Data
                 _conn.Open();
                 //long t = DateTime.Now.Ticks;
                 //Debug.WriteLine("DB Load Start:" + (DateTime.Now.Ticks - t));
+                _dbProvider.CommandTimeout = this.CommandTimeout;
                 reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams );
                 //Debug.WriteLine("DB Reader Done:" + (DateTime.Now.Ticks - t));
                 T[] r = this.Bind(reader);
@@ -172,6 +177,55 @@ namespace FFLib.Data
             return results;
         }
 
+        /// <summary>
+        /// Load resultset into 2 dimensional array of object where the first dimension = rows and the second dimension = columns
+        /// columns are in the order they are returned from the query in the resultset
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="SqlMacros"></param>
+        /// <param name="SqlParams"></param>
+        /// <returns></returns>
+        public virtual object[][] LoadArrayList(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams)
+        {
+            List<object[]> results = new List<object[]>();
+            if (string.IsNullOrEmpty(sql) || sql.Trim() == string.Empty) return new object[][] {};
+            System.Data.IDataReader reader = null;
+            try
+            {
+                _conn.Open();
+                //long t = DateTime.Now.Ticks;
+                //Debug.WriteLine("DB Load Start:" + (DateTime.Now.Ticks - t));
+                _dbProvider.CommandTimeout = this.CommandTimeout;
+                reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(sql, SqlMacros), SqlParams);
+                //Debug.WriteLine("DB Reader Done:" + (DateTime.Now.Ticks - t));
+                //T[] r = this.Bind(reader);
+                while (reader.Read())
+                {
+                    object[] r = new object[reader.FieldCount];
+                    results.Add(r);
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object t = reader.GetValue(i);
+                        if (t == DBNull.Value)
+                        {
+                            r[i]=null;
+                        }
+                        else
+                        {
+                            r[i]=t;
+                        }
+                    }
+                }
+                //Debug.WriteLine("Bind done:" + (DateTime.Now.Ticks - t));
+                return results.ToArray();
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+        }
+
         public virtual Dictionary<string, List<T>> LoadAssocList(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
         {
             return LoadAssocList(sql, null, SqlParams, keyfield);
@@ -205,7 +259,7 @@ namespace FFLib.Data
             return results;
         }
 
-        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) where R:struct
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) 
         {
             System.Data.IDataReader reader = null;
             List<R> r = new List<R>();
@@ -216,6 +270,7 @@ namespace FFLib.Data
                 _conn.Open();
                 //long t = DateTime.Now.Ticks;
                 //Debug.WriteLine("DB Load Start:" + (DateTime.Now.Ticks - t));
+                _dbProvider.CommandTimeout = this.CommandTimeout;
                 reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams);
                 //Debug.WriteLine("DB Reader Done:" + (DateTime.Now.Ticks - t));
                 //T[] r = this.Bind(reader);
@@ -224,7 +279,7 @@ namespace FFLib.Data
                     object t = reader.GetValue(index);
                     if (t == DBNull.Value && typeof(R).IsValueType)
                     {
-                        R q = new R(); //create a min value struct of type R
+                        R q = default(R); //create a min value struct of type R
                         r.Add(q);
                     }
                     else
@@ -301,6 +356,7 @@ namespace FFLib.Data
             try
             {
                 _conn.Open();
+                _dbProvider.CommandTimeout = this.CommandTimeout;
                 return _dbProvider.ExecuteNonQuery(_conn, this.ParseSql(SqlText, SQLMacros), SqlParams);
             }
             finally
@@ -337,6 +393,7 @@ namespace FFLib.Data
             try
             {
                 _conn.Open();
+                _dbProvider.CommandTimeout = this.CommandTimeout;
                 return _dbProvider.ExecuteScalar<object>(_conn, this.ParseSql(SqlText, SQLMacros), SqlParams);
             }
             finally
@@ -538,6 +595,13 @@ namespace FFLib.Data
             return SqlText;
         }
 
+        public delegate void BeforeSave_Delegate(T obj, bool isNew);
+        public BeforeSave_Delegate BeforeSave;
+        protected virtual void OnBeforeSave(T obj, bool isNew)
+        {
+            if (this.BeforeSave != null) this.BeforeSave(obj, isNew);
+        }
+
         public virtual void Save(T obj){
             if (obj == null) return;
 
@@ -549,6 +613,8 @@ namespace FFLib.Data
             //if (_pk_memberinfo == null) return;
 
             isNew = this.IsNew(obj);
+
+            this.OnBeforeSave(obj, isNew);
 
             string sqlPrefix = isNew ? "INSERT INTO #__TableName \n" : "UPDATE #__TableName SET \n";
             
@@ -624,6 +690,7 @@ namespace FFLib.Data
 
             try
             {
+                _dbProvider.CommandTimeout = this.CommandTimeout;
                 if (isNew)
                 {
                     var result = _dbProvider.DBInsert<decimal?>(_conn, sqlText, sqlParams.ToArray());
@@ -643,6 +710,32 @@ namespace FFLib.Data
 
         }
 
+        public virtual void Delete(T obj)
+        {
+            if (obj == null) return;
+
+            if (this.IsNew(obj)) return;
+
+            string sqlPrefix = "DELETE FROM #__TableName \n";
+
+            string sqlCriteria = "\n WHERE #__PK = @pk";
+            string sqlText = this.ParseSql(sqlPrefix + sqlCriteria);
+            List<Sql.SqlParameter> sqlParams = new List<Sql.SqlParameter>();
+
+            sqlParams.Add(new Sql.SqlParameter("@pk", (int)GetPKValue(obj)));
+
+            try
+            {
+                _dbProvider.CommandTimeout = this.CommandTimeout;
+                _dbProvider.ExecuteNonQuery(_conn, sqlText, sqlParams.ToArray());
+                
+            }
+            finally
+            {
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+
+        }
 
         public bool PK_IsDBIdentity
         {

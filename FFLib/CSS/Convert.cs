@@ -35,7 +35,7 @@ namespace FFLib.CSS
                                                     ,{2.834645669291339M,3.779527559055119M,0.03937007874015748M,0.1M,1,0,0}
                                                     ,{1,1,1,1,1,1,100}
                                                     ,{.01M,.01M,0.01M,0.01M,0.01M,0.01M,1}};
-        protected static Regex cssUOMExpression = new Regex(@"^\s*(?:(?<value>[0-9\.]+)\s*(?<uom>(?:[a-z]+|%))?\s*)|(?<keyword>[\#a-z][a-z0-9\-_]*)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+        protected static Regex cssUOMExpression = new Regex(@"^\s*(?:(?<value>-?[0-9\.]+)\s*(?<uom>(?:[a-z]+|%))?\s*)|(?<keyword>[\#a-z][a-z0-9\-_]*)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
         protected static Regex cssRGBExpression1 = new Regex(@"^\s*#(?<r>[0-9A-F]{2})(?<g>[0-9A-F]{2})(?<b>[0-9A-F]{2}\s*$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
         protected static Regex cssRGBExpression2 = new Regex(@"^\s*#(?<r>[0-9A-F]{1})(?<g>[0-9A-F]{1})(?<b>[0-9A-F]{1})\s*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
         protected static Regex cssRGBExpression3 = new Regex(@"^\s*rgb\(\s*(?<r>[0-9]{1,3}),\s*(?<g>[0-9]{1,3}),\s*(?<b>[0-9]{1,3})\s*\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);

@@ -82,6 +82,7 @@ namespace FFLib.CSS
     {
         void Initialize(CSSResolver.RuleIndex ruleIndex);
         IDOMNodeStyleSet GetDOMNodeStyleSet(CSSResolver.IDOMNode domNode);
+        IDOMNodeStyleSet GetInheritableDOMNodeStyleSet(CSSResolver.IDOMNode domNode);
         ICSSRule[] GetRules(CSSResolver.IDOMNode node);
         ICSSRule[] OrderBySpecificity(ICSSRule[] rules);
         Dictionary<CSSResolver.IDOMNode, IDOMNodeStyleSet> StyleCache { get; }
@@ -220,6 +221,8 @@ namespace FFLib.CSS
             _computedStyles = computedStyles;
         }
 
+        public bool InheritableStylesOnly { get; set; }
+
         /// <summary>
         /// returns a boolean value indicating if the IDOMNode for which this style set applies has a declared or inherited value for a given style property by name.
         /// </summary>
@@ -244,6 +247,7 @@ namespace FFLib.CSS
             if (v == null) return new CSSValue((string)null, false);
             return v;
         }
+
         /// <summary>
         /// Returns the absolute value of the given style property name or null if the absolute value cannot be determined.
         /// </summary>

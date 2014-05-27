@@ -82,6 +82,13 @@ namespace FFLib.CSS
 
             return _resolver.GetDOMNodeStyleSet(domNode);
         }
+
+        public virtual IDOMNodeStyleSet GetInheritableDOMNodeStyleSet(IDOMNode domNode)
+        {
+            if (domNode == null) return null;
+
+            return _resolver.GetInheritableDOMNodeStyleSet(domNode);
+        }
     }
 
     /// <summary>
@@ -124,6 +131,17 @@ namespace FFLib.CSS
 
             return this.ResolveNodeStyles(domNode, nodeRules);
         }
+
+        public virtual IDOMNodeStyleSet GetInheritableDOMNodeStyleSet(CSSResolver.IDOMNode domNode)
+        {
+            if (domNode == null) return null;
+            ICSSRule[] nodeRules = this.GetRules(domNode);
+            if (!styleCache.ContainsKey(domNode))
+            {
+                this.ResolveNodeStyles(domNode, nodeRules);
+            }
+            return this.ResolveInheritableNodeStyles(domNode, nodeRules);
+        }
         
         public Dictionary<string, string> GetInheritableStylesIndex()
         {
@@ -141,9 +159,9 @@ namespace FFLib.CSS
             SortedList<string, string> sl = new SortedList<string, string>(StringComparer.CurrentCultureIgnoreCase);
             if (!string.IsNullOrWhiteSpace(node.Id)) sl.Add("#" + node.Id, null);
             //Element names are not case sensitive, convert to lowercase
-            if (!string.IsNullOrWhiteSpace(node.ElementName)) sl.Add(node.ElementName.ToLower(), null);
+            if (!string.IsNullOrWhiteSpace(node.ElementName)) if (!sl.ContainsKey(node.ElementName.ToLower())) sl.Add(node.ElementName.ToLower(), null);
             if (!string.IsNullOrWhiteSpace(node.Class))
-                foreach (string c in node.Class.Split(new char[]{' ','\t'})) sl.Add("." + c, null);
+                foreach (string c in node.Class.Split(new char[] { ' ', '\t' })) if (!sl.ContainsKey("." + c)) sl.Add("." + c, null);
             if (sl.Count == 0) return new ICSSRule[] { };
 
             string[] sortedElements = sl.Keys.ToArray();
@@ -182,7 +200,9 @@ namespace FFLib.CSS
             string attr_width = node.GetAttribute("width");
             string attr_height = node.GetAttribute("height");
 
-            if (!string.IsNullOrWhiteSpace(attr_align)) attr_delarations.Add("text-align:" + attr_align + ";");
+            if (!string.IsNullOrWhiteSpace(attr_align))
+                //Align on <table> is depricated in HTML4 and unsupported in HTML5
+                if (node.ElementName != "table") attr_delarations.Add("text-align:" + attr_align + ";");
             if (!string.IsNullOrWhiteSpace(attr_valign)) attr_delarations.Add("vertical-align:" + attr_valign + ";");
             if (!string.IsNullOrWhiteSpace(attr_width))
             {
@@ -199,9 +219,10 @@ namespace FFLib.CSS
             string attrStyles = node.ElementName + " { " + string.Join("\n",attr_delarations.ToArray()) + " } ";
             ICSSRule[] attrRules = _parser.ParseCSSString(attrStyles);
             if (attrRules == null || attrRules.Length == 0) return nullResult;
+
             //Dictionary<string, ICSSDeclaration> sl = new Dictionary<string, ICSSDeclaration>(StringComparer.CurrentCultureIgnoreCase);
             //foreach (ICSSDeclaration d in attrRules[0].Declarations) if (sl.ContainsKey(d.Name)) sl[d.Name] = d; else sl.Add(d.Name, d);
-
+            //return new ICSSRule[] { new CSSRule(new CSSSelector(true), sl.Values.ToArray()) };
             return attrRules;
         }
 
@@ -289,6 +310,39 @@ namespace FFLib.CSS
             return ds;
         }
 
+        public virtual IDOMNodeStyleSet ResolveInheritableNodeStyles(CSSResolver.IDOMNode node, ICSSRule[] nodeRules)
+        {
+            if (node == null) return null;
+            nodeRules = this.OrderBySpecificity(nodeRules);
+            Dictionary<string, string> _inheritableStyles = this.GetInheritableStylesIndex();
+            Dictionary<string, ICSSValue> styles = new Dictionary<string, ICSSValue>(StringComparer.CurrentCultureIgnoreCase);
+            Dictionary<string, ICSSValue> computedstyles = new Dictionary<string, ICSSValue>(StringComparer.CurrentCultureIgnoreCase);
+
+            this.GetStylesFromDeclarations(nodeRules, styles, _inheritableStyles);
+
+            this.ResolveDeclaredStyles(node, styles, computedstyles);
+
+            this.ResolveInheritedStyles(node, styles, computedstyles, _inheritableStyles);
+
+            //Purge non-inheritable styles from the results
+            _inheritableStyles = this.GetInheritableStylesIndex();
+            List<string> localStyles = new List<string>();
+
+            foreach (string s in styles.Keys)
+                if (!_inheritableStyles.ContainsKey(s)) localStyles.Add(s);
+            foreach (string s in localStyles)
+                styles.Remove(s);
+            if (computedstyles.Count > 0)
+            foreach (string s in localStyles)
+                computedstyles.Remove(s);
+
+            DOMNodeStyleSet ds = new DOMNodeStyleSet(styles, computedstyles);
+
+            //if (styleCache.ContainsKey(node)) styleCache[node] = ds; else styleCache.Add(node, ds);
+
+            return ds;
+        }
+
         /// <summary>
         /// nodeRules are processed into styles and declared styles that are inheritable are removed from the inheritableStyles index
         /// </summary>
@@ -300,17 +354,19 @@ namespace FFLib.CSS
             for (int i = 0; i < nodeRules.Length; i++)
                 for (int t = 0; t < nodeRules[i].Declarations.Length; t++)
                 {
-                    if (!styles.ContainsKey(nodeRules[i].Declarations[t].Name))
-                        styles.Add(nodeRules[i].Declarations[t].Name, new CSSValue(nodeRules[i].Declarations[t]));
+                    string decName = nodeRules[i].Declarations[t].Name;
+                    if (decName == "xalign") decName = "text-align";
+                    if (!styles.ContainsKey(decName))
+                        styles.Add(decName, new CSSValue(nodeRules[i].Declarations[t]));
                     else
-                        styles[nodeRules[i].Declarations[t].Name] = new CSSValue(nodeRules[i].Declarations[t]);
+                        styles[decName] = new CSSValue(nodeRules[i].Declarations[t]);
 
-                    if (inheritableStylesList.ContainsKey(nodeRules[i].Declarations[t].Name)) inheritableStylesList.Remove(nodeRules[i].Declarations[t].Name);
+                    if (inheritableStylesList.ContainsKey(decName)) inheritableStylesList.Remove(decName);
                 }
         }
 
         /// <summary>
-        /// resolves styles by looking up parent values when declared as 'inherit' and eveluating computed value when not absolute.
+        /// resolves styles by looking up parent values when declared as 'inherit' and evaluating computed value when not absolute.
         /// results are added to the styles and computedStyles indexed lists.
         /// </summary>
         /// <param name="node"></param>
@@ -453,51 +509,68 @@ namespace FFLib.CSS
         {
             CSSResolver.RuleIndex index = new CSSResolver.RuleIndex();
             if (rules == null || rules.Length == 0) return index;
-            foreach (ICSSRule rule in rules)
+            try
             {
-                string lastSegment = rule.Selector.Segments[rule.Selector.Segments.Length - 1];
-                string[] segelements = CSSResolverHelper.SplitSegment(lastSegment);
-                SortedList<string, string> sorted = new SortedList<string, string>(StringComparer.CurrentCultureIgnoreCase);
-                foreach (string s in segelements) sorted.Add(s, null);
-                //segelements = sorted.Keys.ToArray();
-                CSSResolver.RuleIndex idx = index;
-                CSSResolver.RuleIndex rdx = index;
-                foreach (string st in sorted.Keys.ToArray())
+                
+                foreach (ICSSRule rule in rules)
                 {
-                    rdx = idx;
-                    if (!idx.ContainsKey(st)) { CSSResolver.RuleIndex idx2 = new CSSResolver.RuleIndex(); idx.Add(st, idx2); idx = idx2; }
-                    else idx = idx[st];
+                    string lastSegment = rule.Selector.Segments[rule.Selector.Segments.Length - 1];
+                    if (string.IsNullOrEmpty(lastSegment)) { System.Diagnostics.Debug.WriteLine("Empty Selector encountered : skipping rule."); continue; }
+                    string[] segelements = CSSResolverHelper.SplitSegment(lastSegment);
+                    SortedList<string, string> sorted = new SortedList<string, string>(StringComparer.CurrentCultureIgnoreCase);
+                    foreach (string s in segelements) sorted.Add(s, null);
+                    //segelements = sorted.Keys.ToArray();
+                    CSSResolver.RuleIndex idx = index;
+                    CSSResolver.RuleIndex rdx = index;
+                    foreach (string st in sorted.Keys.ToArray())
+                    {
+                        rdx = idx;
+                        if (!idx.ContainsKey(st)) { CSSResolver.RuleIndex idx2 = new CSSResolver.RuleIndex(); idx.Add(st, idx2); idx = idx2; }
+                        else idx = idx[st];
+                    }
+                    idx.Rules.Add(rule);
                 }
-                idx.Rules.Add(rule);
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
             return index;
         }
 
         public static string[] SplitSegment(string segment)
         {
-            StringBuilder buffer = new StringBuilder(segment[0]);
-            List<string> result = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(segment)) return result.ToArray();
-            segment = segment.Trim();
-            char c;
-            for (int i = 0; i < segment.Length; i++)
-            {
-                c = segment[i];
-                if (char.IsWhiteSpace(c) || c == '#' || c == '.' || c == ':')
+                StringBuilder buffer = new StringBuilder(segment[0]);
+                List<string> result = new List<string>();
+                try
                 {
-                    if (buffer.Length > 0)
+                if (string.IsNullOrWhiteSpace(segment)) return result.ToArray();
+                segment = segment.Trim();
+                char c;
+
+                for (int i = 0; i < segment.Length; i++)
+                {
+                    c = segment[i];
+                    if (char.IsWhiteSpace(c) || c == '#' || c == '.' || c == ':')
                     {
-                        result.Add(buffer.ToString());
-                        buffer.Clear();
+                        if (buffer.Length > 0)
+                        {
+                            result.Add(buffer.ToString());
+                            buffer.Clear();
+                        }
                     }
+                    if (!char.IsWhiteSpace(c)) buffer.Append(c);
                 }
-                if (!char.IsWhiteSpace(c)) buffer.Append(c);
+                result.Add(buffer.ToString());
+                //Element names are not case sensitive, convert all element names ot lowercase. Do not alter Id's or Classes
+                for (int i = 0; i < result.Count; i++) if (char.IsLetter(result[i][0])) result[i] = result[i].ToLower();
+                return result.ToArray();
             }
-            result.Add(buffer.ToString());
-            //Element names are not case sensitive, convert all element names ot lowercase. Do not alter Id's or Classes
-            for (int i = 0; i < result.Count; i++) if (char.IsLetter(result[i][0])) result[i] = result[i].ToLower();
-            return result.ToArray();
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
     }

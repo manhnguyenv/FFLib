@@ -25,6 +25,8 @@ namespace FFLib.Data.DBProviders
 
     public class SqlServerProvider : IDBProvider 
     {
+        public SqlServerProvider() : base() { this.CommandTimeout = 30; }
+
         public IDbConnection CreateConnection(string connectionString){
             return new SqlConnection(connectionString);
         }
@@ -34,11 +36,14 @@ namespace FFLib.Data.DBProviders
             return (IDbCommand)new SqlCommand(CmdText,(SqlConnection)Connection);
         }
 
+        public int CommandTimeout { get; set; }
+
         public IDataReader ExecuteReader(IDBConnection conn, string sqlText, SqlParameter[] sqlParams)
         {
             IDbCommand sqlCmd = conn.CreateCommand();
             sqlCmd.CommandText = sqlText;
             sqlCmd.CommandType = CommandType.Text;
+            sqlCmd.CommandTimeout = this.CommandTimeout;
 
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
@@ -52,6 +57,7 @@ namespace FFLib.Data.DBProviders
             IDbCommand sqlCmd = conn.CreateCommand();
             sqlCmd.CommandText = sqlText;
             sqlCmd.CommandType = CommandType.Text;
+            sqlCmd.CommandTimeout = this.CommandTimeout;
 
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
@@ -74,6 +80,7 @@ namespace FFLib.Data.DBProviders
             IDbCommand sqlCmd = conn.CreateCommand();
             sqlCmd.CommandText = sqlText;
             sqlCmd.CommandType = CommandType.Text;
+            sqlCmd.CommandTimeout = this.CommandTimeout;
 
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
@@ -87,6 +94,7 @@ namespace FFLib.Data.DBProviders
             IDbCommand sqlCmd = conn.CreateCommand();
             sqlCmd.CommandText = sqlText;
             sqlCmd.CommandType = CommandType.Text;
+            sqlCmd.CommandTimeout = this.CommandTimeout;
 
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
@@ -101,6 +109,7 @@ namespace FFLib.Data.DBProviders
             IDbCommand sqlCmd = conn.CreateCommand();
             sqlCmd.CommandText = sqlText;
             sqlCmd.CommandType = CommandType.Text;
+            sqlCmd.CommandTimeout = this.CommandTimeout;
 
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 

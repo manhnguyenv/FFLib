@@ -20,6 +20,7 @@ namespace FFLib.Data.DBProviders
 {
     public interface IDBProvider
     {
+        int CommandTimeout { get; set; }
         IDbConnection CreateConnection(string connectionString);
         IDbCommand CreateCommand(IDbConnection Connection, string CmdText);
         U DBInsert<U>(IDBConnection conn, string sqlText, SqlParameter[] sqlParams);
