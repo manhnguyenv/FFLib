@@ -518,7 +518,14 @@ namespace FFLib.CSS
                     if (string.IsNullOrEmpty(lastSegment)) { System.Diagnostics.Debug.WriteLine("Empty Selector encountered : skipping rule."); continue; }
                     string[] segelements = CSSResolverHelper.SplitSegment(lastSegment);
                     SortedList<string, string> sorted = new SortedList<string, string>(StringComparer.CurrentCultureIgnoreCase);
-                    foreach (string s in segelements) sorted.Add(s, null);
+                    try
+                    {
+                        foreach (string s in segelements) sorted.Add(s, null);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        throw new ArgumentException("Error processing CSS rule:" + rule.Selector.RawValue, ex);
+                    }
                     //segelements = sorted.Keys.ToArray();
                     CSSResolver.RuleIndex idx = index;
                     CSSResolver.RuleIndex rdx = index;
