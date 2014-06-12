@@ -54,11 +54,18 @@ namespace FFLib.Data
         protected string _pk = null;
         protected MemberInfo _pk_memberinfo = null;
         protected string _tableName = null;
+        protected int _commandTimeout = 0;
 
         //static Regex subTableNameRegex = new Regex("#__TableName", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         //static Regex subPKRegex = new Regex("#__PK", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public int CommandTimeout { get; set; }
+        public int CommandTimeout { 
+            get{
+                if (_commandTimeout > 0) return _commandTimeout;
+                return _conn.CommandTimeout;
+            }
+            set { _commandTimeout = value; } 
+        }
 
         public DBTable(IDBConnection Conn)
             : this(Conn, null)
@@ -67,7 +74,7 @@ namespace FFLib.Data
         public DBTable(IDBConnection Conn, string tableName)
             : base()
         {
-            CommandTimeout = 30;
+            //CommandTimeout = 30;
             _conn = Conn;
             DBTableHelper.TableDef tableDef = DBTableHelper.GetTableDef<T>(tableName);
             _pk = tableDef.PK;
