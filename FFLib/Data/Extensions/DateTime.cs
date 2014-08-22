@@ -24,5 +24,16 @@ namespace FFLib.Extensions
         {
             return self.ToString("yyyy-MM-dd");
         }
+
+        public static string ToSqlDateTime(this DateTime? self)
+        {
+            if (!self.HasValue) return null;
+            return self.Value.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToSqlDate(this DateTime? self)
+        {
+            if (!self.HasValue) return null;
+            return self.Value.ToString("yyyy-MM-dd");
+        }
     }
 }
