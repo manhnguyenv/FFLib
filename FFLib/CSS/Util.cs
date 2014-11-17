@@ -11,7 +11,7 @@ namespace FFLib.CSS
         public static Regex fontRegex = new Regex(
         @"^(?<style>normal|italic|oblique|inherit)?\s*(?<variant>normal|small-caps|inherit)?\s*(?<weight>normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900)?\s*(?<size>[0-9\.]+(?:pt|px|em|in|cm|pc|%)|small|medium|large|x-large|larger|smaller|inherit)\s*(?<height>/[0-9\.]+(?:pt|px|em|in|cm|pc|%))?\s*(?<font>.+)"
         , RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        public static Regex borderRegex = new Regex(@"^(?<width>[0-9\.]+(?:pt|px|em|in|cm|pc|%)|thin|medium|thick)?\s*(?<style>none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|inherit)?\s*(?<color>.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static Regex borderRegex = new Regex(@"^(?<width>[0-9\.]+(?:pt|px|em|in|cm|pc|%)|thin|medium|thick)?\s*(?<style>none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|inherit)?\s*(?<color>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public static Regex listRegex = new Regex(@"^(?<type>disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none)?\s*(?<image>none|inherit|url\(.+?\))?\s*(?<position>inside|outside|inherit)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public static string BrowserBaseCSS { get { return FFLib.Properties.Resources.Base_CSS; } }
         public delegate CSSDeclaration[] SHExpanderDelegate(string name, string value);
