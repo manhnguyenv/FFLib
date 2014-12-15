@@ -48,6 +48,9 @@ namespace FFLib.Data.DBProviders
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
+            #if (SQLDebug) 
+                System.Diagnostics.Debug.WriteLine(sqlCmd.CommandText); 
+            #endif
             return sqlCmd.ExecuteReader();
 
         }
@@ -66,6 +69,9 @@ namespace FFLib.Data.DBProviders
             U result;
             try
             {
+            #if (SQLDebug) 
+                            System.Diagnostics.Debug.WriteLine(sqlCmd.CommandText); 
+            #endif
                 rv = sqlCmd.ExecuteScalar();
                 if (rv == DBNull.Value) return default(U);
                 result = (U)rv;
@@ -85,6 +91,9 @@ namespace FFLib.Data.DBProviders
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
                 if (conn.State == ConnectionState.Closed) conn.Open();
+                #if (SQLDebug) 
+                                System.Diagnostics.Debug.WriteLine(sqlCmd.CommandText); 
+                #endif
                 object result = sqlCmd.ExecuteNonQuery();
                 
         }
@@ -99,6 +108,9 @@ namespace FFLib.Data.DBProviders
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
+            #if (SQLDebug) 
+                            System.Diagnostics.Debug.WriteLine(sqlCmd.CommandText); 
+            #endif
             U result = (U)sqlCmd.ExecuteScalar();
 
             return result;
@@ -114,6 +126,9 @@ namespace FFLib.Data.DBProviders
             if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
+            #if (SQLDebug) 
+                            System.Diagnostics.Debug.WriteLine(sqlCmd.CommandText); 
+            #endif
             return sqlCmd.ExecuteNonQuery();
 
         }

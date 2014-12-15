@@ -35,4 +35,12 @@ namespace FFLib.Extensions
             return new string[] {s1 + s2, s};
         }
     }
+
+    public static partial class StringHelper
+    {
+        public static string IfNull(this string self, string Default){
+            if (self == null) return Default;
+            else return self;
+        }
+    }
 }
