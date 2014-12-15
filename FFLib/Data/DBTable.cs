@@ -598,7 +598,8 @@ namespace FFLib.Data
             if (SQLMacros != null && SQLMacros.Length > 0) macros.AddRange(SQLMacros);
             if (macros != null && macros.Count > 0)
                 foreach (SqlMacro m in macros)
-                    SqlText = SqlText.Replace(m.Token, m.ToString());
+                    SqlText = Regex.Replace(SqlText, m.Token + @"([^A-Za-z0-9]|$)", m.ToString() + @"$1");
+                    //SqlText = SqlText.Replace(m.Token, m.ToString());
             return SqlText;
         }
 
