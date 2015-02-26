@@ -17,6 +17,19 @@ using System.Text;
 namespace FFLib.Data.Attributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class MaxLength : System.Attribute
+    {
+        int _maxLength = 0;
+        public MaxLength(int maxlength) 
+        {
+            if (maxlength < 0) maxlength = 0;
+            _maxLength = maxlength; 
+        }
+
+        public int Value { get { return _maxLength; } }
+    }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class PrimaryKeyAttribute : System.Attribute 
     {
         public PrimaryKeyAttribute(){}

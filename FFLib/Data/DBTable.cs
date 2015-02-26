@@ -122,6 +122,11 @@ namespace FFLib.Data
             return this.Load(SqlText, null, null);
         }
 
+        public virtual T[] Load(string SqlText, Sql.SqlParameter SqlParam)
+        {
+            return this.Load(SqlText, null, new Sql.SqlParameter[]{SqlParam});
+        }
+
         public virtual T[] Load(string SqlText, Sql.SqlParameter[] SqlParams)
         {
             return this.Load(SqlText, null, SqlParams);
@@ -266,6 +271,14 @@ namespace FFLib.Data
             return results;
         }
 
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText)
+        {
+            return this.LoadScalarArray<R>(index, SqlText, null, (Sql.SqlParameter[])null);
+        }
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter SqlParam)
+        {
+            return this.LoadScalarArray<R>(index, SqlText, SqlMacros, new Sql.SqlParameter[] { SqlParam });
+        }
         public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) 
         {
             System.Data.IDataReader reader = null;
@@ -436,8 +449,8 @@ namespace FFLib.Data
                     foreach (MemberInfo m in miList)
                     {
                         string mName = m.Name;
-                        object[] attrs = m.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attrs != null && attrs.Length > 0) mName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        object attr = Attribute.GetCustomAttribute(m,typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attr != null) mName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
                         if (!columnIdx.ContainsKey(mName) && !columnIdx.ContainsKey(m.Name)) continue;
                         mName = columnIdx.ContainsKey(mName) ? mName : m.Name;
                         switch (m.MemberType)
@@ -639,10 +652,11 @@ namespace FFLib.Data
                     case MemberTypes.Property:{
                         PropertyInfo pi = m as PropertyInfo;
                         string propName = pi.Name;
-                        object[] attrs = pi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
-                        if (attrs != null && attrs.Length > 0) continue;
-                        attrs = pi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attrs != null && attrs.Length > 0) propName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        //object[] attrs = pi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
+                        //if (attrs != null && attrs.Length > 0) continue;
+                        if (Attribute.IsDefined(m,typeof(NotPersistedAttribute))) continue;
+                        object attr = Attribute.GetCustomAttribute(pi,typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attr != null) propName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
                         pidx++;
                         if (isNew){
                             fields.Add("[" + propName + "]");
@@ -658,16 +672,22 @@ namespace FFLib.Data
 
                             if (pi.GetValue(obj,null)!= null && (DateTime)pi.GetValue(obj,null) == DateTime.MinValue) pi.SetValue(obj, null,null);
                         }
-
-                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(), pi.GetValue(obj, null) == null ? DBNull.Value : pi.GetValue(obj, null)));
+                        object propvalue = pi.GetValue(obj,null);
+                        if (propvalue == null) propvalue = DBNull.Value;
+                        else {
+                            attr = Attribute.GetCustomAttribute(pi,typeof(FFLib.Data.Attributes.MaxLength), false);
+                            if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
+                        }
+                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(),propvalue ));
                     break;}
                     case MemberTypes.Field:{
                         FieldInfo fi = m as FieldInfo;
                         string fieldName = fi.Name;
-                        object[] attrs = fi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
-                        if (attrs != null && attrs.Length > 0) continue;
-                        attrs = fi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attrs != null && attrs.Length > 0) fieldName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        if (Attribute.IsDefined(m, typeof(NotPersistedAttribute))) continue;
+                        //object[] attrs = fi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
+                        //if (attrs != null && attrs.Length > 0) continue;
+                        object attr = Attribute.GetCustomAttribute(fi,typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attr != null) fieldName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
                         pidx++;
                         if (isNew){
                             fields.Add("[" + fieldName + "]");
@@ -682,7 +702,14 @@ namespace FFLib.Data
                             if ((DateTime)fi.GetValue(obj) == DateTime.MinValue) fi.SetValue(obj,null);
                         }
 
-                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(),fi.GetValue(obj)));
+                        object propvalue = fi.GetValue(obj);
+                        if (propvalue == null) propvalue = DBNull.Value;
+                        else
+                        {
+                            attr = Attribute.GetCustomAttribute(fi,typeof(FFLib.Data.Attributes.MaxLength), false);
+                            if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
+                        }
+                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(), propvalue));
                         break;}
                     default: continue;
                 }
@@ -750,9 +777,7 @@ namespace FFLib.Data
             get
             {
                 if (_pk_memberinfo == null) return false;
-                object[] attrs = _pk_memberinfo.GetCustomAttributes(typeof(FFLib.Data.Attributes.DBIdentity), false);
-                if (attrs != null && attrs.Length > 0) return true;
-                return false;
+                return Attribute.IsDefined(_pk_memberinfo,typeof(FFLib.Data.Attributes.DBIdentity), false);
             }
         }
 
