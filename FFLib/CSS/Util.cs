@@ -13,10 +13,11 @@ namespace FFLib.CSS
         , RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public static Regex borderRegex = new Regex(@"^(?<width>[0-9\.]+(?:pt|px|em|in|cm|pc|%)|thin|medium|thick)?\s*(?<style>none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|inherit)?\s*(?<color>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public static Regex listRegex = new Regex(@"^(?<type>disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none)?\s*(?<image>none|inherit|url\(.+?\))?\s*(?<position>inside|outside|inherit)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static Regex BackgrdRegex = new Regex(@"^(?<color>\w+|#[0-9a-fA-F]+)\s+(url\((?<url>.+?)\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public static string BrowserBaseCSS { get { return FFLib.Properties.Resources.Base_CSS; } }
         public delegate CSSDeclaration[] SHExpanderDelegate(string name, string value);
 
-        protected static Dictionary<string, SHExpanderDelegate> ShortHandProperties = new Dictionary<string, SHExpanderDelegate>(StringComparer.CurrentCultureIgnoreCase) { { "margin", SHE_Margin }, { "padding", SHE_Padding }, { "font", SHE_Font }, { "border", SHE_Border }, { "border-left", SHE_Border_Left }, { "border-right", SHE_Border_Right }, { "border-top", SHE_Border_Top }, { "border-bottom", SHE_Border_Bottom }, { "list-style", SHE_List } };
+        protected static Dictionary<string, SHExpanderDelegate> ShortHandProperties = new Dictionary<string, SHExpanderDelegate>(StringComparer.CurrentCultureIgnoreCase) { { "margin", SHE_Margin }, { "padding", SHE_Padding }, { "font", SHE_Font }, { "border", SHE_Border }, { "border-left", SHE_Border_Left }, { "border-right", SHE_Border_Right }, { "border-top", SHE_Border_Top }, { "border-bottom", SHE_Border_Bottom }, { "list-style", SHE_List }, {"background", SHE_Background}, {"border-color", SHE_BorderColor} };
         
         public static bool IsShorthandProperty(string name){ return ShortHandProperties.ContainsKey(name);}
 
@@ -216,6 +217,33 @@ namespace FFLib.CSS
             if (!string.IsNullOrWhiteSpace(m.Groups["type"].Value)) d.Add(new CSSDeclaration("list-style-type", m.Groups["type"].Value));
             if (!string.IsNullOrWhiteSpace(m.Groups["image"].Value)) d.Add(new CSSDeclaration("list-style-image", m.Groups["image"].Value));
             if (!string.IsNullOrWhiteSpace(m.Groups["position"].Value)) d.Add(new CSSDeclaration("list-style-position", m.Groups["position"].Value));
+
+            return d.ToArray();
+        }
+        public static CSSDeclaration[] SHE_Background(string name, string value)
+        {
+            Match m = BackgrdRegex.Match(value);
+            if (m == null || !m.Success) return new CSSDeclaration[] { new CSSDeclaration(name, value) };
+            List<CSSDeclaration> d = new List<CSSDeclaration>();
+            //top
+            if (!string.IsNullOrWhiteSpace(m.Groups["color"].Value)) d.Add(new CSSDeclaration("background-color", m.Groups["color"].Value));
+            if (!string.IsNullOrWhiteSpace(m.Groups["url"].Value)) d.Add(new CSSDeclaration("background-image", m.Groups["url"].Value));
+
+            return d.ToArray();
+        }
+        public static CSSDeclaration[] SHE_BorderColor(string name, string value)
+        {
+            Match m = borderRegex.Match(value);
+            if (m == null || !m.Success) return new CSSDeclaration[] { new CSSDeclaration(name, value) };
+            List<CSSDeclaration> d = new List<CSSDeclaration>();
+            //top
+            if (!string.IsNullOrWhiteSpace(value)) d.Add(new CSSDeclaration("border-top-color", value));
+            //left
+            if (!string.IsNullOrWhiteSpace(value)) d.Add(new CSSDeclaration("border-left-color", value));
+            //right
+            if (!string.IsNullOrWhiteSpace(value)) d.Add(new CSSDeclaration("border-right-color", value));
+            //bottom
+            if (!string.IsNullOrWhiteSpace(value)) d.Add(new CSSDeclaration("border-bottom-color", value));
 
             return d.ToArray();
         }

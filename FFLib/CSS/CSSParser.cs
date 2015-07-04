@@ -92,20 +92,24 @@ namespace FFLib.CSS
         {
             get
             {
-                if (base.Declarations == null)
-                {
-                    List < CSSDeclaration> d = new List < CSSDeclaration>(_rule.Declarations.Count * 2 + 10);
-                    for (int i = 0; i < _rule.Declarations.Count; i++)
+                
+                    if (base.Declarations == null)
                     {
-                        if (Util.IsShorthandProperty(_rule.Declarations[i].Name))
-                            d.AddRange(Util.ExpandShortHandProperties(_rule.Declarations[i].Name, _rule.Declarations[i].Expression.ToString()));
-                        else
-                            d.Add(new CSSDeclaration(_rule.Declarations[i].Name, _rule.Declarations[i].Expression.ToString()));
-                        
+                        List<CSSDeclaration> d = new List<CSSDeclaration>(_rule.Declarations.Count * 2 + 10);
+                        for (int i = 0; i < _rule.Declarations.Count; i++)
+                        {
+                            try
+                            {
+                            if (Util.IsShorthandProperty(_rule.Declarations[i].Name))
+                                d.AddRange(Util.ExpandShortHandProperties(_rule.Declarations[i].Name, _rule.Declarations[i].Expression.ToString()));
+                            else
+                                d.Add(new CSSDeclaration(_rule.Declarations[i].Name, _rule.Declarations[i].Expression.ToString()));
+                            }
+                            catch { throw new ApplicationException("Error Parsing CSS Declaration:" + _rule.Declarations[i].Name); }
+                        }
+                        base.Declarations = d.ToArray();
                     }
-                    base.Declarations = d.ToArray();
-                }
-                return base.Declarations;
+                    return base.Declarations;
             }
             protected set
             {
