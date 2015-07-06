@@ -122,6 +122,11 @@ namespace FFLib.Data
             return this.Load(SqlText, null, null);
         }
 
+        public virtual T[] Load(string SqlText, Sql.SqlParameter SqlParam)
+        {
+            return this.Load(SqlText, null, new Sql.SqlParameter[]{SqlParam});
+        }
+
         public virtual T[] Load(string SqlText, Sql.SqlParameter[] SqlParams)
         {
             return this.Load(SqlText, null, SqlParams);
@@ -150,6 +155,13 @@ namespace FFLib.Data
                 if (reader != null && !reader.IsClosed ) {reader.Close(); reader.Dispose();}
                 if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
             }
+        }
+
+        public virtual T[] Load<priKeyType>(priKeyType[] idList)
+        {
+            SqlMacro pk = new SqlMacro(SqlMacro.MacroTypes.Keyword,"pk",string.Join(",",idList));
+            string sql = "SELECT * FROM #__TableName WHERE #__PK in ("+pk.Token+")";
+            return this.Load(sql, new SqlMacro[]{pk}, null);
         }
 
         public virtual Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
@@ -182,6 +194,16 @@ namespace FFLib.Data
                 }
             }
             return results;
+        }
+
+        public virtual Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter SqlParam, string keyfield)
+        {
+            return this.LoadAssoc(sql, null, new Sql.SqlParameter[] { SqlParam }, keyfield);
+        }
+
+        public virtual Dictionary<string, T> LoadAssoc(string sql, string keyfield)
+        {
+            return this.LoadAssoc(sql, null, null, keyfield);
         }
 
         /// <summary>
@@ -266,6 +288,14 @@ namespace FFLib.Data
             return results;
         }
 
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText)
+        {
+            return this.LoadScalarArray<R>(index, SqlText, null, (Sql.SqlParameter[])null);
+        }
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter SqlParam)
+        {
+            return this.LoadScalarArray<R>(index, SqlText, SqlMacros, new Sql.SqlParameter[] { SqlParam });
+        }
         public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) 
         {
             System.Data.IDataReader reader = null;
@@ -338,6 +368,11 @@ namespace FFLib.Data
         public int Execute(string SqlText)
         {
             return this.Execute(SqlText, null, null);
+        }
+
+        public int Execute(string SqlText, Sql.SqlParameter SqlParam)
+        {
+            return this.Execute(SqlText, null, new Sql.SqlParameter[]{SqlParam});
         }
 
         public int Execute(string SqlText, Sql.SqlParameter[] SqlParams)
@@ -416,6 +451,11 @@ namespace FFLib.Data
             return (U)o; 
         }
 
+        public U ExecuteScalar<U>(string SqlText, Sql.SqlParameter SqlParam)
+        {
+            return this.ExecuteScalar<U>(SqlText, null, new Sql.SqlParameter[] {SqlParam});
+        }
+
         protected virtual T[] Bind(IDataReader reader)
         {
             List<T> rows = new List<T>();
@@ -436,8 +476,8 @@ namespace FFLib.Data
                     foreach (MemberInfo m in miList)
                     {
                         string mName = m.Name;
-                        object[] attrs = m.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attrs != null && attrs.Length > 0) mName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        object attr = Attribute.GetCustomAttribute(m,typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attr != null) mName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
                         if (!columnIdx.ContainsKey(mName) && !columnIdx.ContainsKey(m.Name)) continue;
                         mName = columnIdx.ContainsKey(mName) ? mName : m.Name;
                         switch (m.MemberType)
@@ -588,6 +628,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public string ParseSql(string SqlText, SqlMacro[] SQLMacros)
         {
+            if (SqlText.Trim().StartsWith("FROM #__TableName")) SqlText = "SELECT * " + SqlText;
             List<SqlMacro> macros = new List<SqlMacro>();
             if (this._tableName != null)
                 macros.Add(new SqlMacro<string>("#__") { MacroType = SqlMacro.MacroTypes.Identifier, Name = "TableName", Value = this._tableName });
@@ -598,7 +639,8 @@ namespace FFLib.Data
             if (SQLMacros != null && SQLMacros.Length > 0) macros.AddRange(SQLMacros);
             if (macros != null && macros.Count > 0)
                 foreach (SqlMacro m in macros)
-                    SqlText = SqlText.Replace(m.Token, m.ToString());
+                    SqlText = Regex.Replace(SqlText, m.Token + @"([^A-Za-z0-9]|$)", m.ToString() + @"$1");
+                    //SqlText = SqlText.Replace(m.Token, m.ToString());
             return SqlText;
         }
 
@@ -638,10 +680,11 @@ namespace FFLib.Data
                     case MemberTypes.Property:{
                         PropertyInfo pi = m as PropertyInfo;
                         string propName = pi.Name;
-                        object[] attrs = pi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
-                        if (attrs != null && attrs.Length > 0) continue;
-                        attrs = pi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attrs != null && attrs.Length > 0) propName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        //object[] attrs = pi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
+                        //if (attrs != null && attrs.Length > 0) continue;
+                        if (Attribute.IsDefined(m,typeof(NotPersistedAttribute))) continue;
+                        object attr = Attribute.GetCustomAttribute(pi,typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attr != null) propName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
                         pidx++;
                         if (isNew){
                             fields.Add("[" + propName + "]");
@@ -657,16 +700,22 @@ namespace FFLib.Data
 
                             if (pi.GetValue(obj,null)!= null && (DateTime)pi.GetValue(obj,null) == DateTime.MinValue) pi.SetValue(obj, null,null);
                         }
-
-                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(), pi.GetValue(obj, null) == null ? DBNull.Value : pi.GetValue(obj, null)));
+                        object propvalue = pi.GetValue(obj,null);
+                        if (propvalue == null) propvalue = DBNull.Value;
+                        else {
+                            attr = Attribute.GetCustomAttribute(pi,typeof(FFLib.Data.Attributes.MaxLength), false);
+                            if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
+                        }
+                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(),propvalue ));
                     break;}
                     case MemberTypes.Field:{
                         FieldInfo fi = m as FieldInfo;
                         string fieldName = fi.Name;
-                        object[] attrs = fi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
-                        if (attrs != null && attrs.Length > 0) continue;
-                        attrs = fi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attrs != null && attrs.Length > 0) fieldName = ((FFLib.Attributes.MapsToAttribute)attrs[0]).PropertyName;
+                        if (Attribute.IsDefined(m, typeof(NotPersistedAttribute))) continue;
+                        //object[] attrs = fi.GetCustomAttributes(typeof(NotPersistedAttribute),false);
+                        //if (attrs != null && attrs.Length > 0) continue;
+                        object attr = Attribute.GetCustomAttribute(fi,typeof(FFLib.Attributes.MapsToAttribute), false);
+                        if (attr != null) fieldName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
                         pidx++;
                         if (isNew){
                             fields.Add("[" + fieldName + "]");
@@ -681,7 +730,14 @@ namespace FFLib.Data
                             if ((DateTime)fi.GetValue(obj) == DateTime.MinValue) fi.SetValue(obj,null);
                         }
 
-                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(),fi.GetValue(obj)));
+                        object propvalue = fi.GetValue(obj);
+                        if (propvalue == null) propvalue = DBNull.Value;
+                        else
+                        {
+                            attr = Attribute.GetCustomAttribute(fi,typeof(FFLib.Data.Attributes.MaxLength), false);
+                            if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
+                        }
+                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(), propvalue));
                         break;}
                     default: continue;
                 }
@@ -749,9 +805,7 @@ namespace FFLib.Data
             get
             {
                 if (_pk_memberinfo == null) return false;
-                object[] attrs = _pk_memberinfo.GetCustomAttributes(typeof(FFLib.Data.Attributes.DBIdentity), false);
-                if (attrs != null && attrs.Length > 0) return true;
-                return false;
+                return Attribute.IsDefined(_pk_memberinfo,typeof(FFLib.Data.Attributes.DBIdentity), false);
             }
         }
 

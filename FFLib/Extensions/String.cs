@@ -19,6 +19,15 @@ namespace FFLib.Extensions
 {
     public static class StringExtensions_General
     {
+        public static string Left(this string self,int length)
+        {
+            if (self == null) return null;
+            if (length < 1) return string.Empty;
+
+            if (length > self.Length) length = self.Length;
+            return self.Substring(0, length);
+        }
+
         public static string SubstringEx(this string self, int StartIndex, int Length)
         {
             if (Length > self.Length - StartIndex) Length = self.Length - StartIndex;
@@ -34,5 +43,37 @@ namespace FFLib.Extensions
             string s2 = StartIndex + Length < self.Length ? self.Substring(StartIndex + Length) : string.Empty;
             return new string[] {s1 + s2, s};
         }
+
+        public static string HtmlQuote(this string str)
+        {
+            if (string.IsNullOrEmpty(str)) return string.Empty;
+            str = str.Replace("&", "&amp;");
+            str = str.Replace("\"", "&quot;");
+            str = str.Replace("'", "&apos;");
+            return str;
+        }
+
+        public static string ToLower(this string str, string defaultValue)
+        {
+            if (str == null) return defaultValue;
+            return str.ToLower();
+        }
+
+        public static int IndexOf(this string[] list, string value)
+        {
+            if (list == null || list.Length == 0) return -1;
+            for (var i = 0; i < list.Length; i++) if (list[i] == value) return i;
+            return -1;
+        }
     }
+
+    public static partial class StringHelper
+    {
+        public static string IfNull(this string self, string Default)
+        {
+            if (self == null) return Default;
+            else return self;
+        }
+    }
+
 }

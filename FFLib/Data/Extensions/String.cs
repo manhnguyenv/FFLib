@@ -86,9 +86,10 @@ namespace FFLib.Extensions
         public static string EscapeSqlList(string[] list, bool quote)
         {
             if (list == null || list.Length == 0) return string.Empty;
+            string[] tlist = (string[])list.Clone();
             for(int i = 0; i < list.Length; i++)
-                list[i] = list[i].SqlEscape(quote);
-            return string.Join(",", list);
+                tlist[i] = list[i].SqlEscape(quote);
+            return string.Join(",", tlist);
         }
     }
 }

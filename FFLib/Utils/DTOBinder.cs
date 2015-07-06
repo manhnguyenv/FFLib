@@ -17,7 +17,7 @@ using System.Reflection;
 
 namespace FFLib
 {
-    public static class DTOBinder
+    public class DTOBinder
     {
         /// <summary>
         /// Sets the value of properties in the target object with values from the source object where the propery names match.

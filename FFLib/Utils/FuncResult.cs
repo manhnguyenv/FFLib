@@ -21,10 +21,10 @@ namespace FFLib
 {
     public class FuncResult<T>
     {
-        public bool Success { get; set; }
-        public T Value { get; set; }
-        public int Code { get; set; }
-        public string Msg {get; set;}
+        public virtual bool Success { get; set; }
+        public virtual T Value { get; set; }
+        public virtual int Code { get; set; }
+        public virtual string Msg {get; set;}
 
         public FuncResult() : base() { this.Success = false; }
         public FuncResult(T value): this(true,value,null)
