@@ -78,9 +78,17 @@ namespace FFLib.Data
         }
         public DBTransaction BeginTransaction()
         {
+            #if (SQLDebug) 
+                System.Diagnostics.Debug.Write("Begin Transaction : "); 
+            #endif
+
             if (_conn.State == System.Data.ConnectionState.Closed) _conn.Open();
             if (_trx == null) _trx = new DBTransaction(_conn.BeginTransaction(), this);
             _trxCnt++;
+            #if (SQLDebug) 
+                  System.Diagnostics.Debug.WriteLine(_trx.GetHashCode());
+            #endif
+
             return _trx;
         }
 
@@ -96,16 +104,30 @@ namespace FFLib.Data
 
         public void Commit()
         {
+            #if (SQLDebug) 
+                 System.Diagnostics.Debug.Write("Commit Transaction : ");
+            #endif
+
             if (_trx == null) { _trxCnt = 0; return; }
             _trx.Transaction.Commit();
+            #if (SQLDebug) 
+                 System.Diagnostics.Debug.Write(_trx.GetHashCode());
+            #endif
+
             if (_trxCnt > 0) _trxCnt--;
             if (_trxCnt < 1) _trx = null;
         }
 
         public void Rollback()
         {
+            #if (SQLDebug) 
+                 System.Diagnostics.Debug.Write("Commit Transaction : ");
+            #endif
             if (_trx == null) { _trxCnt = 0; return; }
             _trx.Transaction.Rollback();
+            #if (SQLDebug) 
+                 System.Diagnostics.Debug.Write(_trx.GetHashCode());
+            #endif
             _trxCnt = 0;
             _trx = null;
         }

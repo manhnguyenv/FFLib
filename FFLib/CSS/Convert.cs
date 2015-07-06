@@ -140,7 +140,7 @@ namespace FFLib.CSS
             Match match = cssRGBExpression4.Match(cssValueText);
 
             string keyword = match.Groups["keyword"].Value;
-            if (keyword.Trim().ToLower() == "transparent") return System.Drawing.Color.FromArgb(0, 0, 0, 0); //Aspose does not honor System.Drawing.Color.Transparent;
+            if (keyword.Trim().ToLower() == "transparent") return System.Drawing.Color.FromArgb(0, 255, 255, 255); //Aspose does not honor System.Drawing.Color.Transparent;
             if (!string.IsNullOrWhiteSpace(keyword) && CssColors.ContainsKey(keyword.Trim())) return Convert.ValueToRGB(CssColors[keyword]);
 
             if (!match.Success) match = cssRGBExpression1.Match(cssValueText);

@@ -19,7 +19,7 @@ namespace FFLib.Extensions
 {
     public static class StringExtensions_General
     {
-        public static string Left(this string self,int length)
+	public static string Left(this string self,int length)
         {
             if (self == null) return null;
             if (length < 1) return string.Empty;
@@ -27,7 +27,6 @@ namespace FFLib.Extensions
             if (length > self.Length) length = self.Length;
             return self.Substring(0, length);
         }
-
         public static string SubstringEx(this string self, int StartIndex, int Length)
         {
             if (Length > self.Length - StartIndex) Length = self.Length - StartIndex;
