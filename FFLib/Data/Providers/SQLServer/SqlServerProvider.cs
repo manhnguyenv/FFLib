@@ -14,13 +14,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using System.Data.SqlClient;
+using SqlClient = System.Data.SqlClient;
 
 namespace FFLib.Data.DBProviders
 {
-    public interface ISQLDBConnection : IDBConnection
+    public static class SqlParameterCollectionExtension
     {
-
+        public static void AddRange(this SqlClient.SqlParameterCollection self, IEnumerable<SqlParameter> sqlParameters){
+            foreach (var p in sqlParameters)
+                self.AddWithValue(p.Name, p.Value);
+        }
     }
 
     public class SqlServerProvider : IDBProvider 
@@ -28,12 +31,12 @@ namespace FFLib.Data.DBProviders
         public SqlServerProvider() : base() { this.CommandTimeout = 30; }
 
         public IDbConnection CreateConnection(string connectionString){
-            return new SqlConnection(connectionString);
+            return new SqlClient.SqlConnection(connectionString);
         }
 
         public IDbCommand CreateCommand(IDbConnection Connection, string CmdText)
         {
-            return (IDbCommand)new SqlCommand(CmdText,(SqlConnection)Connection);
+            return (IDbCommand)new SqlClient.SqlCommand(CmdText, (SqlClient.SqlConnection)Connection);
         }
 
         public int CommandTimeout { get; set; }
@@ -45,7 +48,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             #if (SQLDebug) 
@@ -62,7 +65,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             object rv = null; //temporary reference to executeScalar return value
@@ -88,7 +91,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
                 if (conn.State == ConnectionState.Closed) conn.Open();
                 #if (SQLDebug) 
@@ -105,7 +108,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             #if (SQLDebug) 
@@ -123,7 +126,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             #if (SQLDebug) 

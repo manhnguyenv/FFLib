@@ -15,7 +15,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Data;
-using Sql = System.Data.SqlClient;
 using System.Text.RegularExpressions;
 using FFLib.Data.Attributes;
 using FFLib.Data.DBProviders;
@@ -27,20 +26,20 @@ namespace FFLib.Data
     public interface IDBTable<T> where T : class, new()
     {
         T Load(int ID);
-        T[] Load(string sql,Sql.SqlParameter[] SqlParams);
+        T[] Load(string sql,SqlParameter[] SqlParams);
         T[] Load(string SqlText, SqlMacro[] SqlMacros);
-        T[] Load(string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams);
+        T[] Load(string SqlText, SqlMacro[] SqlMacros, SqlParameter[] SqlParams);
         T LoadOne(string SqlText);
-        T LoadOne(string SqlText, System.Data.SqlClient.SqlParameter[] paramList);
-        Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter[] SqlParams, string key);
-        Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield);
-        Dictionary<string, List<T>> LoadAssocList(string sql, Sql.SqlParameter[] SqlParams, string keyfield);
-        int Execute(string SqlText, Sql.SqlParameter[] SqlParams);
+        T LoadOne(string SqlText, SqlParameter[] paramList);
+        Dictionary<string, T> LoadAssoc(string sql, SqlParameter[] SqlParams, string key);
+        Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams, string keyfield);
+        Dictionary<string, List<T>> LoadAssocList(string sql, SqlParameter[] SqlParams, string keyfield);
+        int Execute(string SqlText, SqlParameter[] SqlParams);
         int Execute(string SqlText, SqlMacro[] SQLMacros);
-        int Execute(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams);
+        int Execute(string SqlText, SqlMacro[] SQLMacros, SqlParameter[] SqlParams);
         object ExecuteScalar(string SqlText);
         object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros);
-        object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams);
+        object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, SqlParameter[] SqlParams);
         string ParseSql(string SqlText);
         string ParseSql(string SqlText, SqlMacro[] SQLMacros);
         void Save(T obj);
@@ -98,8 +97,8 @@ namespace FFLib.Data
         public virtual T Load(int ID)
         {
             string sqlText = this.ParseSql("SELECT * FROM #__TableName WHERE #__PK = @id");
-            Sql.SqlParameter id = new Sql.SqlParameter("@id", ID);
-            T[] rows = this.Load(sqlText, new Sql.SqlParameter[] { id });
+            SqlParameter id = new SqlParameter("@id", ID);
+            T[] rows = this.Load(sqlText, new SqlParameter[] { id });
             if (rows == null || rows.Length == 0) return new T();
             return rows[0];
         }
@@ -109,7 +108,7 @@ namespace FFLib.Data
             return this.LoadOne(SqlText, null);
         }
 
-        public virtual T LoadOne(string SqlText, System.Data.SqlClient.SqlParameter[] paramList)
+        public virtual T LoadOne(string SqlText, SqlParameter[] paramList)
         {
             T[] results;
             results = this.Load(SqlText, null, paramList);
@@ -122,12 +121,12 @@ namespace FFLib.Data
             return this.Load(SqlText, null, null);
         }
 
-        public virtual T[] Load(string SqlText, Sql.SqlParameter SqlParam)
+        public virtual T[] Load(string SqlText, SqlParameter SqlParam)
         {
-            return this.Load(SqlText, null, new Sql.SqlParameter[]{SqlParam});
+            return this.Load(SqlText, null, new SqlParameter[]{SqlParam});
         }
 
-        public virtual T[] Load(string SqlText, Sql.SqlParameter[] SqlParams)
+        public virtual T[] Load(string SqlText, SqlParameter[] SqlParams)
         {
             return this.Load(SqlText, null, SqlParams);
         }
@@ -136,7 +135,7 @@ namespace FFLib.Data
             return this.Load(SqlText, SqlMacros, null);
         }
 
-        public virtual T[] Load(string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) {
+        public virtual T[] Load(string SqlText, SqlMacro[] SqlMacros, SqlParameter[] SqlParams) {
             System.Data.IDataReader reader = null;
            // Sql.SqlCommand sqlCmd = new Sql.SqlCommand(this.ParseSql(SqlText,SqlMacros), _conn.Connection);
            // if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
@@ -164,12 +163,12 @@ namespace FFLib.Data
             return this.Load(sql, new SqlMacro[]{pk}, null);
         }
 
-        public virtual Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
+        public virtual Dictionary<string, T> LoadAssoc(string sql, SqlParameter[] SqlParams, string keyfield)
         {
             return LoadAssoc(sql, null, SqlParams, keyfield);
         }
 
-        public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield)
+        public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams, string keyfield)
         {
             Dictionary<string, T> results = new Dictionary<string, T>();
             if (string.IsNullOrEmpty(keyfield) || keyfield.Trim() == string.Empty) return results;
@@ -196,9 +195,9 @@ namespace FFLib.Data
             return results;
         }
 
-        public virtual Dictionary<string, T> LoadAssoc(string sql, Sql.SqlParameter SqlParam, string keyfield)
+        public virtual Dictionary<string, T> LoadAssoc(string sql, SqlParameter SqlParam, string keyfield)
         {
-            return this.LoadAssoc(sql, null, new Sql.SqlParameter[] { SqlParam }, keyfield);
+            return this.LoadAssoc(sql, null, new SqlParameter[] { SqlParam }, keyfield);
         }
 
         public virtual Dictionary<string, T> LoadAssoc(string sql, string keyfield)
@@ -214,7 +213,7 @@ namespace FFLib.Data
         /// <param name="SqlMacros"></param>
         /// <param name="SqlParams"></param>
         /// <returns></returns>
-        public virtual object[][] LoadArrayList(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams)
+        public virtual object[][] LoadArrayList(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams)
         {
             List<object[]> results = new List<object[]>();
             if (string.IsNullOrEmpty(sql) || sql.Trim() == string.Empty) return new object[][] {};
@@ -255,12 +254,12 @@ namespace FFLib.Data
             }
         }
 
-        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, Sql.SqlParameter[] SqlParams, string keyfield)
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlParameter[] SqlParams, string keyfield)
         {
             return LoadAssocList(sql, null, SqlParams, keyfield);
         }
 
-        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams, string keyfield)
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams, string keyfield)
         {
             Dictionary<string, List<T>> results = new Dictionary<string, List<T>>();
             if (string.IsNullOrEmpty(keyfield) || keyfield.Trim() == string.Empty) return results;
@@ -290,13 +289,13 @@ namespace FFLib.Data
 
         public virtual R[] LoadScalarArray<R>(int index, string SqlText)
         {
-            return this.LoadScalarArray<R>(index, SqlText, null, (Sql.SqlParameter[])null);
+            return this.LoadScalarArray<R>(index, SqlText, null, (SqlParameter[])null);
         }
-        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter SqlParam)
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, SqlParameter SqlParam)
         {
-            return this.LoadScalarArray<R>(index, SqlText, SqlMacros, new Sql.SqlParameter[] { SqlParam });
+            return this.LoadScalarArray<R>(index, SqlText, SqlMacros, new SqlParameter[] { SqlParam });
         }
-        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, Sql.SqlParameter[] SqlParams) 
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, SqlParameter[] SqlParams) 
         {
             System.Data.IDataReader reader = null;
             List<R> r = new List<R>();
@@ -370,12 +369,12 @@ namespace FFLib.Data
             return this.Execute(SqlText, null, null);
         }
 
-        public int Execute(string SqlText, Sql.SqlParameter SqlParam)
+        public int Execute(string SqlText, SqlParameter SqlParam)
         {
-            return this.Execute(SqlText, null, new Sql.SqlParameter[]{SqlParam});
+            return this.Execute(SqlText, null, new SqlParameter[]{SqlParam});
         }
 
-        public int Execute(string SqlText, Sql.SqlParameter[] SqlParams)
+        public int Execute(string SqlText, SqlParameter[] SqlParams)
         {
             return this.Execute(SqlText, null, SqlParams);
         }
@@ -391,7 +390,7 @@ namespace FFLib.Data
         /// <param name="SQLMacros">Array of SQLMacros. SQLMacros will be substituted in to the SQL String before execution</param>
         /// <param name="SqlParams">Array of SQL Parameters</param>
         /// <returns>int : number of rows affected. this may be altered by sql statements such as nocount</returns>
-        public int Execute(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
+        public int Execute(string SqlText, SqlMacro[] SQLMacros, SqlParameter[] SqlParams)
         {
             //Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
             //if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
@@ -412,7 +411,7 @@ namespace FFLib.Data
             return this.ExecuteScalar(SqlText, null, null);
         }
 
-        public object ExecuteScalar(string SqlText, Sql.SqlParameter[] SqlParams)
+        public object ExecuteScalar(string SqlText, SqlParameter[] SqlParams)
         {
             return this.ExecuteScalar(SqlText, null, SqlParams);
         }
@@ -428,7 +427,7 @@ namespace FFLib.Data
         /// <param name="SQLMacros">Array of SQLMacros. SQLMacros will be substituted in to the SQL String before execution</param>
         /// <param name="SqlParams">Array of SQL Parameters</param>
         /// <returns>object : the first value of the first row of the resultset</returns>
-        public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
+        public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, SqlParameter[] SqlParams)
         {
             //Sql.SqlCommand sqlCmd = _conn.CreateCommand(this.ParseSql(SqlText, SQLMacros));
             //if (SqlParams != null) sqlCmd.Parameters.AddRange(SqlParams);
@@ -444,16 +443,16 @@ namespace FFLib.Data
             }
         }
 
-        public U ExecuteScalar<U>(string SqlText, SqlMacro[] SQLMacros, Sql.SqlParameter[] SqlParams)
+        public U ExecuteScalar<U>(string SqlText, SqlMacro[] SQLMacros, SqlParameter[] SqlParams)
         {
             object o = ExecuteScalar(SqlText, SQLMacros, SqlParams);
             if ( o == null || o == DBNull.Value) return default(U);
             return (U)o; 
         }
 
-        public U ExecuteScalar<U>(string SqlText, Sql.SqlParameter SqlParam)
+        public U ExecuteScalar<U>(string SqlText, SqlParameter SqlParam)
         {
-            return this.ExecuteScalar<U>(SqlText, null, new Sql.SqlParameter[] {SqlParam});
+            return this.ExecuteScalar<U>(SqlText, null, new SqlParameter[] {SqlParam});
         }
 
         protected virtual T[] Bind(IDataReader reader)
@@ -670,7 +669,7 @@ namespace FFLib.Data
 
             List<string> fields = new List<string>();
             List<string> values = new List<string>();
-            List<Sql.SqlParameter> sqlParams = new List<Sql.SqlParameter>();
+            List<SqlParameter> sqlParams = new List<SqlParameter>();
             Int32 pidx = 0;
 
             MemberInfo[] members = obj.GetType().GetMembers( BindingFlags.Instance | BindingFlags.Public);
@@ -706,7 +705,7 @@ namespace FFLib.Data
                             attr = Attribute.GetCustomAttribute(pi,typeof(FFLib.Data.Attributes.MaxLength), false);
                             if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
                         }
-                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(),propvalue ));
+                        sqlParams.Add(new SqlParameter("@p" + pidx.ToString(),propvalue ));
                     break;}
                     case MemberTypes.Field:{
                         FieldInfo fi = m as FieldInfo;
@@ -737,7 +736,7 @@ namespace FFLib.Data
                             attr = Attribute.GetCustomAttribute(fi,typeof(FFLib.Data.Attributes.MaxLength), false);
                             if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
                         }
-                        sqlParams.Add(new Sql.SqlParameter("@p" + pidx.ToString(), propvalue));
+                        sqlParams.Add(new SqlParameter("@p" + pidx.ToString(), propvalue));
                         break;}
                     default: continue;
                 }
@@ -749,7 +748,7 @@ namespace FFLib.Data
             string sqlCriteria = isNew ? "" : "\n WHERE #__PK = @pk";
             string sqlText = this.ParseSql(sqlPrefix + sqlfields + sqlvalues + sqlCriteria + (isNew & this.PK_IsDBIdentity ? "; SELECT SCOPE_IDENTITY();" : ""));
 
-            sqlParams.Add(new Sql.SqlParameter("@pk", (int)GetPKValue(obj)));
+            sqlParams.Add(new SqlParameter("@pk", (int)GetPKValue(obj)));
 
             try
             {
@@ -783,9 +782,9 @@ namespace FFLib.Data
 
             string sqlCriteria = "\n WHERE #__PK = @pk";
             string sqlText = this.ParseSql(sqlPrefix + sqlCriteria);
-            List<Sql.SqlParameter> sqlParams = new List<Sql.SqlParameter>();
+            List<SqlParameter> sqlParams = new List<SqlParameter>();
 
-            sqlParams.Add(new Sql.SqlParameter("@pk", (int)GetPKValue(obj)));
+            sqlParams.Add(new SqlParameter("@pk", (int)GetPKValue(obj)));
 
             try
             {

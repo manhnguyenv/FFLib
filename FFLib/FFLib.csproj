@@ -70,6 +70,7 @@
     </Compile>
     <Compile Include="Data\DBTableHelper.cs" />
     <Compile Include="Data\Extensions\DateTime.cs" />
+    <Compile Include="Data\SqlParameter.cs" />
     <Compile Include="Extensions\Hashtable.cs" />
     <Compile Include="Extensions\Int.cs" />
     <Compile Include="Data\Extensions\String.cs" />
