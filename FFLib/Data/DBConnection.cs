@@ -109,7 +109,7 @@ namespace FFLib.Data
             #endif
 
             if (_trx == null) { _trxCnt = 0; return; }
-            _trx.Transaction.Commit();
+            if (_trxCnt == 1)_trx.Transaction.Commit();
             #if (SQLDebug) 
                  System.Diagnostics.Debug.Write(_trx.GetHashCode());
             #endif

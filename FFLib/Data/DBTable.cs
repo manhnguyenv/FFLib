@@ -628,7 +628,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public string ParseSql(string SqlText, SqlMacro[] SQLMacros)
         {
-            if (SqlText.Trim().StartsWith("FROM #__TableName")) SqlText = "SELECT * " + SqlText;
+            if (SqlText.Trim().ToLower().StartsWith("from #__tablename")) SqlText = "SELECT * " + SqlText;
             List<SqlMacro> macros = new List<SqlMacro>();
             if (this._tableName != null)
                 macros.Add(new SqlMacro<string>("#__") { MacroType = SqlMacro.MacroTypes.Identifier, Name = "TableName", Value = this._tableName });
