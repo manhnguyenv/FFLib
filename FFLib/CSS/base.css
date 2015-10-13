@@ -320,7 +320,9 @@ small {
 strong {
 	font-weight: bold;
 }
-
+strike {
+    text-decoration:line-through;
+}
 style {
 	display: none;
 	zoom: 1;
