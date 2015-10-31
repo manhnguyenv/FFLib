@@ -19,6 +19,17 @@ namespace FFLib
 {
     public class DTOBinder
     {
+
+        #region options
+
+        public class Options
+        {
+            public bool SkipNulls = false;
+            public bool SkipZeroInts = false;
+        }
+
+        #endregion
+
         /// <summary>
         /// Sets the value of properties in the target object with values from the source object where the propery names match.
         ///  
@@ -29,7 +40,22 @@ namespace FFLib
         ///<returns>Returns the TargetObject</returns>
         static public T Bind<T>(Object sourceObj, T targetObj, string[] ignore)
         {
-            DTOBinder.Bind(sourceObj, null, null, targetObj, null, null, ignore);
+            DTOBinder.Bind(sourceObj, null, null, targetObj, null, null, ignore, null);
+            return targetObj;
+        }
+
+        /// <summary>
+        /// Sets the value of properties in the target object with values from the source object where the propery names match.
+        ///  
+        /// </summary>
+        /// <param name="sourceObj">list of controls to attempt to bind</param>
+        /// <param name="targetObj">object instance to bind vaues to</param>
+        /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
+        /// <param name="skipNulls">Skips binding null values in source object to target. target field/property remains unchanged when source field/property is null.</param>
+        ///<returns>Returns the TargetObject</returns>
+        static public T Bind<T>(Object sourceObj, T targetObj, string[] ignore, Options options)
+        {
+            DTOBinder.Bind(sourceObj, null, null, targetObj, null, null, ignore, options);
             return targetObj;
         }
 
@@ -42,8 +68,22 @@ namespace FFLib
         /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
         static public void Bind(Object sourceObj, Object targetObj, string[] ignore)
         {
-            DTOBinder.Bind(sourceObj, null, null, targetObj, null, null, ignore);
+            DTOBinder.Bind(sourceObj, null, null, targetObj, null, null, ignore, null);
         }
+
+        /// <summary>
+        /// Sets the value of properties in the target object with values from the source object where the propery names match.
+        ///  
+        /// </summary>
+        /// <param name="sourceObj">list of controls to attempt to bind</param>
+        /// <param name="targetObj">object instance to bind vaues to</param>
+        /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
+        /// <param name="skipNulls">Skips binding null values in source object to target. target field/property remains unchanged when source field/property is null.</param>
+        static public void Bind(Object sourceObj, Object targetObj, string[] ignore, Options options)
+        {
+            DTOBinder.Bind(sourceObj, null, null, targetObj, null, null, ignore, options);
+        }
+
         /// <summary>
         /// Sets the value of properties in the target object with values from the source object where the propery names match.
         ///  and the source propery name is prefixed by 'Prefix'
@@ -54,7 +94,7 @@ namespace FFLib
         /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
         static public void Bind(Object sourceObj, Object targetObj, string prefix, string[] ignore)
         {
-            DTOBinder.Bind(sourceObj, null, null, targetObj, prefix, null, ignore);
+            DTOBinder.Bind(sourceObj, null, null, targetObj, prefix, null, ignore, null);
         }
         /// <summary>
         /// Sets the value of properties in the target object with values from the source object where the propery names match.
@@ -66,7 +106,7 @@ namespace FFLib
         /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
         static public void Bind(Object sourceObj, string prefix, Object targetObj, string[] ignore)
         {
-            DTOBinder.Bind(sourceObj, prefix, null, targetObj, null, null, ignore);
+            DTOBinder.Bind(sourceObj, prefix, null, targetObj, null, null, ignore, null);
         }
         /// <summary>
         /// Sets the value of properties in the target object with values from the source object where the propery names match.
@@ -80,7 +120,7 @@ namespace FFLib
         /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
         static public void Bind(Object sourceObj, string prefix, string suffix, Object targetObj, string[] ignore)
         {
-            DTOBinder.Bind(sourceObj, prefix, suffix, targetObj, null, null, ignore);
+            DTOBinder.Bind(sourceObj, prefix, suffix, targetObj, null, null, ignore, null);
         }
 
         /// <summary>
@@ -95,7 +135,7 @@ namespace FFLib
         /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
         static public void Bind(Object sourceObj, Object targetObj, string prefix, string suffix, string[] ignore)
         {
-            DTOBinder.Bind(sourceObj, null, null, targetObj, prefix, suffix, ignore);
+            DTOBinder.Bind(sourceObj, null, null, targetObj, prefix, suffix, ignore, null);
         }
 
         /// <summary>
@@ -110,9 +150,10 @@ namespace FFLib
         /// <param name="tprefix">Match Target property names with this prefix to Source property names without this prefix</param>
         /// <param name="tsuffix">Match Target property names with this suffix to Source property names without this suffix</param>
         /// <param name="ignore">String array of target properties by name that are not to bound from the source i.e. ignore</param>
-        static public void Bind(Object sourceObj, string sprefix, string ssuffix, Object targetObj, string tprefix, string tsuffix, string[] ignore)
+        static public void Bind(Object sourceObj, string sprefix, string ssuffix, Object targetObj, string tprefix, string tsuffix, string[] ignore, Options options)
         {
             if (sourceObj == null || targetObj == null) { return; }
+            if (options == null) options = new Options();
             try
             {
                 //index ignore fields
@@ -178,6 +219,8 @@ namespace FFLib
                         try
                         {
                             value = sProp.GetValue(sourceObj, null);
+                            if (options.SkipNulls && value == null) continue;
+                            if (options.SkipZeroInts && value != null && value is int && (int)value == 0) continue;
                             DTOBinder._setValue(targetObj, prop, value);
                         }
                         catch (Exception ex)

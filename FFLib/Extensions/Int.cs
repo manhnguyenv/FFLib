@@ -24,10 +24,26 @@ namespace FFLib.Extensions
             return -1;
         }
 
-        public static int[] ParseFromString(this int self, string[] list)
+        //public static int[] ParseFromString(this int self, string[] list)
+        //{
+
+        //    if (list == null || list.Length == 0) return new int[] { };
+        //    int[] result = new int[list.Length];
+        //    for (int i = 0; i < list.Length; i++)
+        //    {
+        //        int r = 0;
+        //        int.TryParse(list[i], out r);
+        //        result[i] = r;
+        //    }
+        //    return result;
+        //}
+
+        public static int[] ParseIntArray(this string self,char delimiter)
         {
 
-            if (list == null || list.Length == 0) return new int[] { };
+            if (self == null || self.Length == 0) return new int[] { };
+            if (delimiter == null) delimiter = '|';
+            string[] list = self.Split(new char[] { delimiter });
             int[] result = new int[list.Length];
             for (int i = 0; i < list.Length; i++)
             {
