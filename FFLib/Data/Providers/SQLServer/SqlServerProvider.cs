@@ -10,6 +10,7 @@
  * Contributions to FFLib requires a contributor grant on file with Fast Forward, LLC.
 ********************************************************/
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,19 @@ namespace FFLib.Data.DBProviders
         public static void AddRange(this SqlClient.SqlParameterCollection self, IEnumerable<SqlParameter> sqlParameters){
             foreach (var p in sqlParameters)
                 self.AddWithValue(p.Name, p.Value);
+        }
+
+        public static void AddRange(this SqlClient.SqlParameterCollection self, SqlParameter[] sqlParameters)
+        {
+            foreach (var p in sqlParameters)
+                self.AddWithValue(p.Name, p.Value);
+        }
+    }
+
+    public static class SPC {
+        public static void AddRange(SqlClient.SqlParameterCollection self, SqlParameter[] sqlParameters)
+        {
+            SqlParameterCollectionExtension.AddRange(self, sqlParameters);
         }
     }
 
@@ -41,6 +55,12 @@ namespace FFLib.Data.DBProviders
 
         public int CommandTimeout { get; set; }
 
+        public IDataReader ExecuteReader(IDBConnection conn, string sqlText, dynamic sqlParams)
+        {
+            
+            return this.ExecuteReader(conn, sqlText, SqlParameter.FromDynamic(sqlParams));
+        }
+
         public IDataReader ExecuteReader(IDBConnection conn, string sqlText, SqlParameter[] sqlParams)
         {
             IDbCommand sqlCmd = conn.CreateCommand();
@@ -48,7 +68,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) SPC.AddRange((SqlClient.SqlParameterCollection)sqlCmd.Parameters, sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             #if (SQLDebug) 
@@ -58,6 +78,11 @@ namespace FFLib.Data.DBProviders
 
         }
 
+        public U DBInsert<U>(IDBConnection conn, string sqlText, dynamic sqlParams)
+        {
+            return this.DBInsert<U>(conn, sqlText, SqlParameter.FromDynamic(sqlParams));
+        }
+
         public U DBInsert<U>(IDBConnection conn, string sqlText, SqlParameter[] sqlParams)
         {
             IDbCommand sqlCmd = conn.CreateCommand();
@@ -65,7 +90,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) SPC.AddRange((SqlClient.SqlParameterCollection)sqlCmd.Parameters, sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             object rv = null; //temporary reference to executeScalar return value
@@ -84,6 +109,11 @@ namespace FFLib.Data.DBProviders
             return result;
         }
 
+        public void DBUpdate(IDBConnection conn, string sqlText, dynamic sqlParams)
+        {
+            this.DBUpdate(conn, sqlText, SqlParameter.FromDynamic(sqlParams));
+        }
+
         public void DBUpdate(IDBConnection conn, string sqlText, SqlParameter[] sqlParams)
         {
             IDbCommand sqlCmd = conn.CreateCommand();
@@ -91,7 +121,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) SPC.AddRange((SqlClient.SqlParameterCollection)sqlCmd.Parameters, sqlParams);
 
                 if (conn.State == ConnectionState.Closed) conn.Open();
                 #if (SQLDebug) 
@@ -101,6 +131,11 @@ namespace FFLib.Data.DBProviders
                 
         }
 
+        public U ExecuteScalar<U>(IDBConnection conn, string sqlText, dynamic sqlParams)
+        {
+            return this.ExecuteScalar<U>(conn, sqlText, SqlParameter.FromDynamic(sqlParams));
+        }
+
         public U ExecuteScalar<U>(IDBConnection conn, string sqlText, SqlParameter[] sqlParams)
         {
             IDbCommand sqlCmd = conn.CreateCommand();
@@ -108,7 +143,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) SPC.AddRange((SqlClient.SqlParameterCollection)sqlCmd.Parameters, sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             #if (SQLDebug) 
@@ -119,6 +154,11 @@ namespace FFLib.Data.DBProviders
             return result;
         }
 
+        public int ExecuteNonQuery(IDBConnection conn, string sqlText, dynamic sqlParams)
+        {
+            return this.ExecuteNonQuery(conn, sqlText, SqlParameter.FromDynamic(sqlParams));
+        }
+
         public int ExecuteNonQuery(IDBConnection conn, string sqlText, SqlParameter[] sqlParams)
         {
             IDbCommand sqlCmd = conn.CreateCommand();
@@ -126,7 +166,7 @@ namespace FFLib.Data.DBProviders
             sqlCmd.CommandType = CommandType.Text;
             sqlCmd.CommandTimeout = this.CommandTimeout;
 
-            if (sqlParams != null && sqlParams.Length > 0) ((SqlClient.SqlParameterCollection)sqlCmd.Parameters).AddRange(sqlParams);
+            if (sqlParams != null && sqlParams.Length > 0) SPC.AddRange((SqlClient.SqlParameterCollection)sqlCmd.Parameters, sqlParams);
 
             if (conn.State == ConnectionState.Closed) conn.Open();
             #if (SQLDebug) 
