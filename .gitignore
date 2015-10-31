@@ -8,5 +8,6 @@
 */obj/*
 */bin/*
 */packages/*
+/packages/*
 /*.suo
 /FFLib/*.suo

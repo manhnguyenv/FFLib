@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{099EE221-5FC9-4B75-8EEB-28E56C04C5FC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FFLib</RootNamespace>
+    <AssemblyName>FFLib</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;CLR_V4</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\FFLib.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;CLR_V4</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AntiXssLibrary">
+      <HintPath>..\packages\AntiXSS.4.2.1\lib\net40\AntiXssLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlSanitizationLibrary">
+      <HintPath>..\packages\AntiXSS.4.2.1\lib\net40\HtmlSanitizationLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes\HtmlEncodingAttribute.cs" />
+    <Compile Include="Attributes\MapsToAttribute.cs" />
+    <Compile Include="Data\Attributes\TableAttributes.cs" />
+    <Compile Include="Data\DBConnection.cs" />
+    <Compile Include="Data\DBContext.cs" />
+    <Compile Include="Data\DBTable.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\DBTableHelper.cs" />
+    <Compile Include="Data\Extensions\DateTime.cs" />
+    <Compile Include="Data\SqlParameter.cs" />
+    <Compile Include="Extensions\Hashtable.cs" />
+    <Compile Include="Extensions\Int.cs" />
+    <Compile Include="Data\Extensions\String.cs" />
+    <Compile Include="Data\IDBConnection.cs" />
+    <Compile Include="Data\ORMInterfaces.cs" />
+    <Compile Include="Data\Providers\IDBProvider.cs" />
+    <Compile Include="Data\Providers\SQLServer\SqlServerProvider.cs" />
+    <Compile Include="Data\SqlMacro.cs" />
+    <Compile Include="Data\DBConnectionString.cs" />
+    <Compile Include="Extensions\enum.cs" />
+    <Compile Include="Extensions\String.cs" />
+    <Compile Include="Utils\FuncResult.cs" />
+    <Compile Include="Ioc_Container.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LoggerService.cs" />
+    <Compile Include="Threading\BlockingQueue.cs" />
+    <Compile Include="Threading\NonBlockingQueue.cs" />
+    <Compile Include="Threading\SendOrPostCallbackItem.cs" />
+    <Compile Include="Threading\SynchronizationContext.cs" />
+    <Compile Include="Threading\StaThread.cs" />
+    <Compile Include="Threading\SyncronizationQueue.cs" />
+    <Compile Include="Utils\DIResolver.cs" />
+    <Compile Include="Utils\DTOBinder.cs" />
+    <Compile Include="Utils\HtmlEncoder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\MD5.cs" />
+    <Compile Include="Utils\NBaseEncoder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Packages\HtmlAgilityPack.1.4.3\HtmlAgilityPack.1.4.3.nupkg" />
+    <None Include="Packages\HtmlAgilityPack.1.4.6\HtmlAgilityPack.1.4.6.nupkg" />
+    <None Include="Packages\HtmlAgilityPack.1.4.6\lib\winrt45\HtmlAgilityPack.pri" />
+    <None Include="Packages\ncalc.1.3.8\ncalc.1.3.8.nupkg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
