@@ -36,11 +36,9 @@
     <Reference Include="AntiXssLibrary">
       <HintPath>..\packages\AntiXSS.4.2.1\lib\net40\AntiXssLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="BoneSoft.CSS">
-      <HintPath>..\packages\BoneSoft\BoneSoft.CSS.dll</HintPath>
-    </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\..\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizationLibrary">
       <HintPath>..\packages\AntiXSS.4.2.1\lib\net40\HtmlSanitizationLibrary.dll</HintPath>
@@ -57,11 +55,6 @@
   <ItemGroup>
     <Compile Include="Attributes\HtmlEncodingAttribute.cs" />
     <Compile Include="Attributes\MapsToAttribute.cs" />
-    <Compile Include="CSS\Convert.cs" />
-    <Compile Include="CSS\CSSParser.cs" />
-    <Compile Include="CSS\CSSResolver.cs" />
-    <Compile Include="CSS\CSSClasses.cs" />
-    <Compile Include="CSS\Util.cs" />
     <Compile Include="Data\Attributes\TableAttributes.cs" />
     <Compile Include="Data\DBConnection.cs" />
     <Compile Include="Data\DBContext.cs" />
@@ -105,10 +98,53 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Packages\HtmlAgilityPack.1.4.3\HtmlAgilityPack.1.4.3.nupkg" />
+    <None Include="Packages\HtmlAgilityPack.1.4.6\HtmlAgilityPack.1.4.6.nupkg" />
+    <None Include="Packages\HtmlAgilityPack.1.4.6\lib\winrt45\HtmlAgilityPack.pri" />
+    <None Include="Packages\ncalc.1.3.8\ncalc.1.3.8.nupkg" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CSS\base.css" />
     <Content Include="License.txt" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\HAPIcon.png" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\Silverlight 4.0\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\Silverlight 4.0\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\sl3-wp\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\sl3-wp\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\sl4-windowsphone71\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.3\lib\sl4-windowsphone71\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\HAPIcon.png" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net20\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net20\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net20\HtmlAgilityPack.xml" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net40-client\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net40-client\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net40-client\HtmlAgilityPack.xml" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl3-wp\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl3-wp\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl3-wp\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl4-windowsphone71\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl4-windowsphone71\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl4-windowsphone71\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl4\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl4\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl4\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl5\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl5\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\sl5\HtmlAgilityPack.XML" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\winrt45\HtmlAgilityPack.dll" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\winrt45\HtmlAgilityPack.pdb" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\lib\winrt45\HtmlAgilityPack.xml" />
+    <Content Include="Packages\HtmlAgilityPack.1.4.6\readme.txt" />
+    <Content Include="Packages\MathParser\MathParser.dll" />
+    <Content Include="Packages\ncalc.1.3.8\lib\NCalc.dll" />
     <Content Include="Resources\base.css" />
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +152,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Packages\ModelCssView\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
