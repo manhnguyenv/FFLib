@@ -116,7 +116,7 @@ namespace FFLibUnitTests.Data
             {
                 dbprovider.Expect(x => x.DBUpdate(Arg<FFLib.Data.IDBConnection>.Is.Anything
                     , Arg<string>.Is.Equal("UPDATE #__TableName SET \n[IsLocked] = @p1,[ID] = @p2,[Name] = @p3,[Status] = @p4,[CreateDate] = @p5\n WHERE [ID] = @pk")
-                    , Arg<System.Data.SqlClient.SqlParameter[]>.Is.Anything));
+                    , Arg<FFLib.Data.SqlParameter[]>.Is.Anything));
                 //dbprovider.Stub(x => x.ExecuteReader(null, null, null)).IgnoreArguments().Repeat.Any().Return(idr);
                 Conn.Open();
                 LastCall.Repeat.Any();
@@ -150,7 +150,7 @@ namespace FFLibUnitTests.Data
             {
                 dbprovider.Expect(x => x.DBUpdate(Arg<FFLib.Data.IDBConnection>.Is.Anything
                     , Arg<string>.Is.Equal("UPDATE #__TableName SET \n[Locked] = @p1,[ID] = @p2,[Name] = @p3,[Status] = @p4,[CreateDate] = @p5\n WHERE [ID] = @pk")
-                    , Arg<System.Data.SqlClient.SqlParameter[]>.Is.Anything));
+                    , Arg<FFLib.Data.SqlParameter[]>.Is.Anything));
                 //dbprovider.Stub(x => x.ExecuteReader(null, null, null)).IgnoreArguments().Repeat.Any().Return(idr);
                 Conn.Open();
                 LastCall.Repeat.Any();
