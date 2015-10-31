@@ -116,9 +116,22 @@ namespace FFLib.Data
             return results[0];
         }
 
+        public virtual T LoadOne(string SqlText, dynamic paramList)
+        {
+            T[] results;
+            results = this.Load(SqlText, null, paramList);
+            if (results == null || results.Length == 0) return null;
+            return results[0];
+        }
+
         public virtual T[] Load(string SqlText)
         {
             return this.Load(SqlText, null, null);
+        }
+
+        public virtual T[] Load(string SqlText, dynamic SqlParam)
+        {
+            return this.Load(SqlText, null, SqlParam);
         }
 
         public virtual T[] Load(string SqlText, SqlParameter SqlParam)
@@ -156,6 +169,25 @@ namespace FFLib.Data
             }
         }
 
+        public virtual T[] Load(string SqlText, SqlMacro[] SqlMacros, dynamic SqlParams)
+        {
+            System.Data.IDataReader reader = null;
+            try
+            {
+                _conn.Open();
+                _dbProvider.CommandTimeout = this.CommandTimeout;
+                reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams);
+                T[] r = this.Bind(reader);
+
+                return r;
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+        }
+
         public virtual T[] Load<priKeyType>(priKeyType[] idList)
         {
             SqlMacro pk = new SqlMacro(SqlMacro.MacroTypes.Keyword,"pk",string.Join(",",idList));
@@ -163,9 +195,19 @@ namespace FFLib.Data
             return this.Load(sql, new SqlMacro[]{pk}, null);
         }
 
+        public virtual Dictionary<string, T> LoadAssoc(string sql, dynamic SqlParam, string keyfield)
+        {
+            return this.LoadAssoc(sql, null, SqlParam, keyfield);
+        }
+
         public virtual Dictionary<string, T> LoadAssoc(string sql, SqlParameter[] SqlParams, string keyfield)
         {
             return LoadAssoc(sql, null, SqlParams, keyfield);
+        }
+
+        public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, dynamic SqlParams, string keyfield)
+        {
+            return this.LoadAssoc(sql, SqlMacros, SqlParameter.FromDynamic(SqlParams), keyfield);
         }
 
         public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams, string keyfield)
@@ -203,6 +245,19 @@ namespace FFLib.Data
         public virtual Dictionary<string, T> LoadAssoc(string sql, string keyfield)
         {
             return this.LoadAssoc(sql, null, null, keyfield);
+        }
+
+        /// <summary>
+        /// Load resultset into 2 dimensional array of object where the first dimension = rows and the second dimension = columns
+        /// columns are in the order they are returned from the query in the resultset
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="SqlMacros"></param>
+        /// <param name="SqlParams"></param>
+        /// <returns></returns>
+        public virtual object[][] LoadArrayList(string sql, SqlMacro[] SqlMacros, dynamic SqlParams)
+        {
+            return this.LoadArrayList(sql, SqlMacros, SqlParameter.FromDynamic(SqlParams));
         }
 
         /// <summary>
@@ -254,9 +309,19 @@ namespace FFLib.Data
             }
         }
 
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, dynamic SqlParams, string keyfield)
+        {
+            return LoadAssocList(sql, null, SqlParams, keyfield);
+        }
+
         public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlParameter[] SqlParams, string keyfield)
         {
             return LoadAssocList(sql, null, SqlParams, keyfield);
+        }
+
+        public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlMacro[] SqlMacros, dynamic SqlParams, string keyfield)
+        {
+            return this.LoadAssocList(sql, SqlMacros, SqlParameter.FromDynamic(SqlParams), keyfield);
         }
 
         public virtual Dictionary<string, List<T>> LoadAssocList(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams, string keyfield)
@@ -291,10 +356,17 @@ namespace FFLib.Data
         {
             return this.LoadScalarArray<R>(index, SqlText, null, (SqlParameter[])null);
         }
+
         public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, SqlParameter SqlParam)
         {
             return this.LoadScalarArray<R>(index, SqlText, SqlMacros, new SqlParameter[] { SqlParam });
         }
+
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, dynamic SqlParams)
+        {
+            return this.LoadScalarArray<R>(index, SqlText, SqlMacros, SqlParameter.FromDynamic(SqlParams));
+        }
+
         public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, SqlParameter[] SqlParams) 
         {
             System.Data.IDataReader reader = null;
@@ -374,6 +446,11 @@ namespace FFLib.Data
             return this.Execute(SqlText, null, new SqlParameter[]{SqlParam});
         }
 
+        public int Execute(string SqlText, dynamic SqlParam)
+        {
+            return this.Execute(SqlText, null, SqlParam);
+        }
+
         public int Execute(string SqlText, SqlParameter[] SqlParams)
         {
             return this.Execute(SqlText, null, SqlParams);
@@ -383,6 +460,12 @@ namespace FFLib.Data
         {
             return this.Execute(SqlText, SQLMacros, null);
         }
+
+        public int Execute(string SqlText, SqlMacro[] SQLMacros, dynamic SqlParams)
+        {
+            return this.Execute(SqlText, SQLMacros, SqlParameter.FromDynamic(SqlParams));
+        }
+
         /// <summary>
         /// Execute SQL Batch returning the number of rows affected
         /// </summary>
@@ -416,9 +499,19 @@ namespace FFLib.Data
             return this.ExecuteScalar(SqlText, null, SqlParams);
         }
 
+        public object ExecuteScalar(string SqlText, dynamic SqlParams)
+        {
+            return this.ExecuteScalar(SqlText, null, SqlParameter.FromDynamic(SqlParams));
+        }
+
         public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros)
         {
             return this.ExecuteScalar(SqlText, SQLMacros, null);
+        }
+
+        public object ExecuteScalar(string SqlText, SqlMacro[] SQLMacros, dynamic SqlParams)
+        {
+            return this.ExecuteScalar(SqlText, SQLMacros, SqlParameter.FromDynamic(SqlParams));
         }
         /// <summary>
         /// Execute SQL Batch returning the first value of the first row of the resultset
@@ -443,11 +536,21 @@ namespace FFLib.Data
             }
         }
 
+        public U ExecuteScalar<U>(string SqlText, SqlMacro[] SQLMacros, dynamic SqlParams)
+        {
+            return this.ExecuteScalar<U>(SqlText, SQLMacros, SqlParameter.FromDynamic(SqlParams));
+        }
+
         public U ExecuteScalar<U>(string SqlText, SqlMacro[] SQLMacros, SqlParameter[] SqlParams)
         {
             object o = ExecuteScalar(SqlText, SQLMacros, SqlParams);
             if ( o == null || o == DBNull.Value) return default(U);
             return (U)o; 
+        }
+
+        public U ExecuteScalar<U>(string SqlText, dynamic SqlParams)
+        {
+            return this.ExecuteScalar<U>(SqlText, null, SqlParameter.FromDynamic(SqlParams));
         }
 
         public U ExecuteScalar<U>(string SqlText, SqlParameter SqlParam)

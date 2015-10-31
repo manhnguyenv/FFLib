@@ -24,10 +24,15 @@ namespace FFLib.Data.DBProviders
         IDbConnection CreateConnection(string connectionString);
         IDbCommand CreateCommand(IDbConnection Connection, string CmdText);
         U DBInsert<U>(IDBConnection conn, string sqlText, SqlParameter[] sqlParams);
+        U DBInsert<U>(IDBConnection conn, string sqlText, dynamic sqlParams);
         void DBUpdate(IDBConnection conn, string sqlText, SqlParameter[] sqlParams);
+        void DBUpdate(IDBConnection conn, string sqlText, dynamic sqlParams);
         int ExecuteNonQuery(IDBConnection conn, string sqlText, SqlParameter[] sqlParams);
+        int ExecuteNonQuery(IDBConnection conn, string sqlText, dynamic sqlParams);
         U ExecuteScalar<U>(IDBConnection conn, string sqlText, SqlParameter[] sqlParams);
+        U ExecuteScalar<U>(IDBConnection conn, string sqlText, dynamic sqlParams);
         IDataReader ExecuteReader(IDBConnection conn, string sqlText, SqlParameter[] sqlParams);
+        IDataReader ExecuteReader(IDBConnection conn, string sqlText, dynamic sqlParams);
     }
 
 }
