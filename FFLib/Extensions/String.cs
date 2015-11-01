@@ -73,6 +73,11 @@ namespace FFLib.Extensions
             if (self == null) return Default;
             else return self;
         }
+        public static string SafeReplace(this string self, string oldValue, string newValue)
+        {
+            if (self == null || oldValue == null || newValue == null) return null;
+            else return self.Replace(oldValue,newValue);
+        }
     }
 
 }
