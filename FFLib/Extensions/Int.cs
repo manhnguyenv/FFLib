@@ -7,6 +7,12 @@ namespace FFLib.Extensions
 {
     public static class IntExtension
     {
+        public static int IfNull(this int? self, int Default)
+        {
+            if (self == null) return 0;
+            else return self.Value;
+        }
+
         public static string Join(this int[] list, char delimiter)
         {
             if (list == null || list.Length == 0) return string.Empty;

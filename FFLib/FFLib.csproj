@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="Data\DBTableHelper.cs" />
     <Compile Include="Data\Extensions\DateTime.cs" />
+    <Compile Include="Data\SQLCode.cs" />
     <Compile Include="Data\SqlParameter.cs" />
     <Compile Include="Extensions\Hashtable.cs" />
     <Compile Include="Extensions\Int.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Data\SqlMacro.cs" />
     <Compile Include="Data\DBConnectionString.cs" />
     <Compile Include="Extensions\enum.cs" />
+    <Compile Include="Extensions\Object.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="Utils\FuncResult.cs" />
     <Compile Include="Ioc_Container.cs" />
