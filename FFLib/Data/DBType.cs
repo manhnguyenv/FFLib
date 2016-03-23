@@ -12,6 +12,7 @@ namespace FFLib.Data
         CharEnum,
         Decimal,
         Integer,
-        String
+        String,
+        StringEnum
     }
 }
