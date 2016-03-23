@@ -58,4 +58,11 @@ namespace FFLib.Data.Attributes
 
         public string TableName { get { return _tableName; } }
     }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class CastAs : System.Attribute
+    {
+        public DBType DBType;
+        public CastAs(DBType asType) { DBType = asType; }
+    }
 }

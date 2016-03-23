@@ -580,20 +580,22 @@ namespace FFLib.Data
                         string mName = m.Name;
                         object attr = Attribute.GetCustomAttribute(m,typeof(FFLib.Attributes.MapsToAttribute), false);
                         if (attr != null) mName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
+                        object castAs = Attribute.GetCustomAttribute(m, typeof(FFLib.Data.Attributes.CastAs), false);
                         if (!columnIdx.ContainsKey(mName) && !columnIdx.ContainsKey(m.Name)) continue;
                         mName = columnIdx.ContainsKey(mName) ? mName : m.Name;
                         switch (m.MemberType)
                         {
                             case MemberTypes.Field:
                                 FieldInfo fi = m as FieldInfo;
-                                DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : reader.GetValue(columnIdx[mName]));
+                                DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : castAs != null ? this.DBCastAs(((FFLib.Data.Attributes.CastAs)castAs).DBType, reader.GetValue(columnIdx[mName])) : reader.GetValue(columnIdx[mName]));
                                 break;
                             case MemberTypes.Property:
                                 PropertyInfo pi = m as PropertyInfo;
-                                if (pi.CanWrite) DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : reader.GetValue(columnIdx[mName]));
+                                if (pi.CanWrite) DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : castAs != null ? this.DBCastAs(((FFLib.Data.Attributes.CastAs)castAs).DBType, reader.GetValue(columnIdx[mName])) : reader.GetValue(columnIdx[mName]));
                                 break;
                         }
                     }
+                    if (dto is ISupportsIsDirty) ((ISupportsIsDirty)dto).InitCleanState();
                     rows.Add(dto);
                     if (_dbContext != null) _dbContext.UpdateTableCache(_tableName, this.GetPKValue(dto).ToString(),dto);
                 }
@@ -611,27 +613,24 @@ namespace FFLib.Data
 
         static private void _SetValue(Object obj, MemberInfo m, Object value)
         {
-            string propTypeName = null;
+            //string propTypeName = null;
             switch (m.MemberType)
             {
                 case MemberTypes.Property:
                     {
                         PropertyInfo prop = m as PropertyInfo;
-                        propTypeName = prop.PropertyType.Name;
-                        if (prop.PropertyType.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(prop.PropertyType).Name; }
-                        if (prop.PropertyType.IsGenericType && propTypeName != null && value == null) { prop.SetValue(obj, null, null); return; }
-                        if (prop.PropertyType.IsClass && value == null) { prop.SetValue(obj, null, null); return; }
-                        prop.SetValue(obj, DBTable<T>.ConvertFieldValue(propTypeName,value), null);
+                        //propTypeName = prop.PropertyType.Name;
+                        //if (prop.PropertyType.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(prop.PropertyType).Name; }
+                        //if (prop.PropertyType.IsGenericType && propTypeName != null && value == null) { prop.SetValue(obj, null, null); return; }
+                        //if (prop.PropertyType.IsClass && value == null) { prop.SetValue(obj, null, null); return; }
+                        prop.SetValue(obj, DBTable<T>.ConvertFieldValue(prop.PropertyType,value), null);
                     }
                     break;
                 case MemberTypes.Field:
                     {
-                        FieldInfo prop = m as FieldInfo;
-                        propTypeName = prop.FieldType.Name;
-                        if (prop.FieldType.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(prop.FieldType).Name; }
-                        if (prop.FieldType.IsGenericType && propTypeName != null && value == null) { prop.SetValue(obj, null); return; }
-                        if (prop.FieldType.IsClass && value == null) { prop.SetValue(obj, null); return; }
-                        prop.SetValue(obj, DBTable<T>.ConvertFieldValue(propTypeName,value));
+                        FieldInfo field = m as FieldInfo;
+                        
+                        field.SetValue(obj, DBTable<T>.ConvertFieldValue(field.FieldType,value));
                     }
                     break;
             }
@@ -640,10 +639,15 @@ namespace FFLib.Data
 
         }
 
-        protected static object ConvertFieldValue(string fieldtype, object value)
+        protected static object ConvertFieldValue(Type fieldtype, object value)
         {
             object result = null;
-            switch (fieldtype.ToLower())
+            string propTypeName = fieldtype.Name;
+            if (fieldtype.IsGenericType) { propTypeName = Nullable.GetUnderlyingType(fieldtype).Name; }
+            if (fieldtype.IsGenericType && propTypeName != null && value == null) { return null; }
+            if (fieldtype.IsClass && value == null) { return null; }
+
+            switch (propTypeName.ToLower())
             {
                 case "string": result = Convert.ToString(value).TrimEnd(); break;
                 case "char": result = Convert.ToChar(value); break;
@@ -665,7 +669,10 @@ namespace FFLib.Data
                 case "datetime": result = Convert.ToDateTime(value); break;
                 case "guid": result = new Guid(Convert.ToString(value).TrimEnd()); break;
                 case "date": result = Convert.ToDateTime(value); break;
-                default: result = value; break;
+                default:
+                    if (fieldtype.IsEnum && value is string)
+                        value = Enum.Parse(fieldtype, value.ToString());
+                    result = value; break;
             }
             return result;
         }
@@ -807,7 +814,9 @@ namespace FFLib.Data
                         else {
                             attr = Attribute.GetCustomAttribute(pi,typeof(FFLib.Data.Attributes.MaxLength), false);
                             if (attr != null) propvalue = propvalue.ToString().Left(((FFLib.Data.Attributes.MaxLength)attr).Value);
-                        }
+                            attr = Attribute.GetCustomAttribute(pi, typeof(FFLib.Data.Attributes.CastAs), false);
+                            if (attr != null) propvalue = this.DBCastAs(((FFLib.Data.Attributes.CastAs)attr).DBType,propvalue);
+                            }
                         sqlParams.Add(new SqlParameter("@p" + pidx.ToString(),propvalue ));
                     break;}
                     case MemberTypes.Field:{
@@ -976,5 +985,24 @@ namespace FFLib.Data
             return null;
         }
         
+        public object DBCastAs(DBType asType, object value)
+        {
+            switch (asType)
+            {
+                case DBType.Boolean: return (bool)value;
+                case DBType.Char:
+                    if (value.GetType().IsEnum) return (char)(int)value;
+                    return (char)value;
+                case DBType.CharEnum:
+                    if (value == null) return null;
+                    if (value.GetType().IsEnum) return (char)(int)value;
+                    if (value is string) return ((int)((string)value)[0]).ToString();
+                    return value;
+                case DBType.Decimal: return (decimal)value;
+                case DBType.Integer: return (int)value;
+                case DBType.String: return (string)value;
+                default: return value;
+            }
+        }
     }
 }

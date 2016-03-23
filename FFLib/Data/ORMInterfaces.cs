@@ -19,6 +19,7 @@ namespace FFLib.Data
     public interface ISupportsIsDirty
     {
         bool IsDirty();
+        void InitCleanState();
     }
 
     public interface ISupportsIsNew
