@@ -94,6 +94,11 @@ namespace FFLib.Data
 
         public IDBConnection DBConnection { get { return _conn; } }
 
+        /// <summary>
+        /// Loads a single object by it's integer Id value. if not found an new empty object will be returned.
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns>object instance of record or new empty instance (using parameterless contructor). Never returns null.</returns>
         public virtual T Load(int ID)
         {
             string sqlText = this.ParseSql("SELECT * FROM #__TableName WHERE #__PK = @id");
@@ -188,6 +193,12 @@ namespace FFLib.Data
             }
         }
 
+        /// <summary>
+        /// Loads an array of objects whose Primary keys are in idList. 
+        /// </summary>
+        /// <typeparam name="priKeyType">Primary key data type</typeparam>
+        /// <param name="idList">Array of Id's to load</param>
+        /// <returns></returns>
         public virtual T[] Load<priKeyType>(priKeyType[] idList)
         {
             SqlMacro pk = new SqlMacro(SqlMacro.MacroTypes.Keyword,"pk",string.Join(",",idList));
@@ -195,21 +206,41 @@ namespace FFLib.Data
             return this.Load(sql, new SqlMacro[]{pk}, null);
         }
 
+        /// <summary>
+        /// Load Associative List.
+        /// Loads objects into a dictionary keyed by the KeyField parameter
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="SqlParam"></param>
+        /// <param name="keyfield"></param>
+        /// <returns></returns>
         public virtual Dictionary<string, T> LoadAssoc(string sql, dynamic SqlParam, string keyfield)
         {
             return this.LoadAssoc(sql, null, SqlParam, keyfield);
         }
 
+        /// <summary>
+        /// Load Associative List.
+        /// Loads objects into a dictionary keyed by the KeyField parameter
+        /// </summary>
         public virtual Dictionary<string, T> LoadAssoc(string sql, SqlParameter[] SqlParams, string keyfield)
         {
             return LoadAssoc(sql, null, SqlParams, keyfield);
         }
 
+        /// <summary>
+        /// Load Associative List.
+        /// Loads objects into a dictionary keyed by the KeyField parameter
+        /// </summary>
         public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, dynamic SqlParams, string keyfield)
         {
             return this.LoadAssoc(sql, SqlMacros, SqlParameter.FromDynamic(SqlParams), keyfield);
         }
 
+        /// <summary>
+        /// Load Associative List.
+        /// Loads objects into a dictionary keyed by the KeyField parameter
+        /// </summary>
         public virtual Dictionary<string, T> LoadAssoc(string sql, SqlMacro[] SqlMacros, SqlParameter[] SqlParams, string keyfield)
         {
             Dictionary<string, T> results = new Dictionary<string, T>();
@@ -237,11 +268,19 @@ namespace FFLib.Data
             return results;
         }
 
+        /// <summary>
+        /// Load Associative List.
+        /// Loads objects into a dictionary keyed by the KeyField parameter
+        /// </summary>
         public virtual Dictionary<string, T> LoadAssoc(string sql, SqlParameter SqlParam, string keyfield)
         {
             return this.LoadAssoc(sql, null, new SqlParameter[] { SqlParam }, keyfield);
         }
 
+        /// <summary>
+        /// Load Associative List.
+        /// Loads objects into a dictionary keyed by the KeyField parameter
+        /// </summary>
         public virtual Dictionary<string, T> LoadAssoc(string sql, string keyfield)
         {
             return this.LoadAssoc(sql, null, null, keyfield);

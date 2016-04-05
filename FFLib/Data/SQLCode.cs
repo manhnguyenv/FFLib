@@ -98,6 +98,7 @@ namespace FFLib.Data
         public List<string> whereFragments = new List<string>(20);
         public List<string> groupbyFragments = new List<string>(20);
         public List<string> havingFragments = new List<string>(20);
+        public List<string> orderbyFragments = new List<string>(20);
         public string unionFragment;
 
         /// <summary>
@@ -187,6 +188,18 @@ namespace FFLib.Data
         }
 
         /// <summary>
+        /// Add ORDER BY criteria. 
+        /// the final Sql string will be composed by appending all critera together seperated by commas. Include parenthisis and boolean operators as needed in the criteria parameter.
+        /// </summary>
+        /// <param name="orderbyFragment"></param>
+        /// <returns></returns>
+        public virtual SqlQuery OrderBy(string orderbyFragment)
+        {
+            this.orderbyFragments.Add(orderbyFragment);
+            return this;
+        }
+
+        /// <summary>
         /// Adds a UNION clause to the end of the Sql Statement
         /// </summary>
         /// <param name="unionFragment">A Valid UNION modifier e.g. ALL or null/whitespace if none</param>
@@ -221,6 +234,7 @@ namespace FFLib.Data
             + (whereFragments != null && whereFragments.Count > 0 ? "\nWHERE " + string.Join(" ", whereFragments) : "")
             + (groupbyFragments != null && groupbyFragments.Count > 0 ? "\nGROUP BY " + string.Join(",", groupbyFragments) : "")
             + (havingFragments != null && havingFragments.Count > 0 ? "\nHAVING " + string.Join(",", havingFragments) : "")
+            + (orderbyFragments != null && orderbyFragments.Count > 0 ? "\nORDER BY " + string.Join(",", orderbyFragments) : "")
             + (!string.IsNullOrWhiteSpace(unionFragment) ? "\n" + unionFragment + "\n" : "");
         }
     }
