@@ -19,6 +19,17 @@ namespace FFLib.Extensions
         }
 
         /// <summary>
+        /// Returns the int value when not null or 0 when int? is null.
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static decimal NotNull(this decimal? self)
+        {
+            if (self != null) return self.Value;
+            return 0;
+        }
+
+        /// <summary>
         /// returns the string value when not null or string.empty when string is null.
         /// </summary>
         /// <param name="self"></param>
