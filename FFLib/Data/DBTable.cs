@@ -401,6 +401,11 @@ namespace FFLib.Data
             return this.LoadScalarArray<R>(index, SqlText, SqlMacros, new SqlParameter[] { SqlParam });
         }
 
+        public virtual R[] LoadScalarArray<R>(int index, string SqlText, dynamic SqlParams)
+        {
+            return this.LoadScalarArray<R>(index, SqlText, null , SqlParameter.FromDynamic(SqlParams));
+        }
+
         public virtual R[] LoadScalarArray<R>(int index, string SqlText, SqlMacro[] SqlMacros, dynamic SqlParams)
         {
             return this.LoadScalarArray<R>(index, SqlText, SqlMacros, SqlParameter.FromDynamic(SqlParams));
