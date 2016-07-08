@@ -129,6 +129,22 @@ namespace FFLib.Data
             return results[0];
         }
 
+        public virtual dynamic LoadOneDynamic(string SqlText, dynamic SqlParams)
+        {
+            System.Data.IDataReader reader = null;
+            try
+            {
+                dynamic[] r = this.LoadDynamic(SqlText,SqlParams);
+                if (r == null || r.Length == 0) return null;
+                return r[0];
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+        }
+
         public virtual T[] Load(string SqlText)
         {
             return this.Load(SqlText, null, null);
@@ -183,6 +199,30 @@ namespace FFLib.Data
                 _dbProvider.CommandTimeout = this.CommandTimeout;
                 reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams);
                 T[] r = this.Bind(reader);
+
+                return r;
+            }
+            finally
+            {
+                if (reader != null && !reader.IsClosed) { reader.Close(); reader.Dispose(); }
+                if (_conn != null && !_conn.InTrx && _conn.State != ConnectionState.Closed) _conn.Close();
+            }
+        }
+
+        public virtual dynamic[] LoadDynamic(string SqlText, dynamic SqlParams)
+        {
+            return this.LoadDynamic(SqlText, null, SqlParams);
+        }
+
+        public virtual dynamic[] LoadDynamic(string SqlText, SqlMacro[] SqlMacros, dynamic SqlParams)
+        {
+            System.Data.IDataReader reader = null;
+            try
+            {
+                _conn.Open();
+                _dbProvider.CommandTimeout = this.CommandTimeout;
+                reader = _dbProvider.ExecuteReader(_conn, this.ParseSql(SqlText, SqlMacros), SqlParams);
+                dynamic[] r = this.BindDynamic(reader);
 
                 return r;
             }
@@ -436,6 +476,7 @@ namespace FFLib.Data
                     }
                     else
                     {
+                        if (t is DBNull) continue;
                         r.Add((R)t);
                     }
                 }
@@ -642,6 +683,48 @@ namespace FFLib.Data
                     if (dto is ISupportsIsDirty) ((ISupportsIsDirty)dto).InitCleanState();
                     rows.Add(dto);
                     if (_dbContext != null) _dbContext.UpdateTableCache(_tableName, this.GetPKValue(dto).ToString(),dto);
+                }
+            }
+            finally
+            {
+                if (reader != null)
+                {
+                    reader.Close();
+                    reader.Dispose();
+                }
+            }
+            return rows.ToArray();
+        }
+
+        protected virtual dynamic[] BindDynamic(IDataReader reader)
+        {
+            List<dynamic> rows = new List<dynamic>();
+            try
+            {
+                if (reader == null || reader.IsClosed) return rows.ToArray();
+
+                MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
+                Dictionary<string, int> columnIdx = new Dictionary<string, int>();
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    columnIdx.Add(reader.GetName(i), i);
+                }
+                while (reader.Read())
+                {
+                    dynamic dto = new System.Dynamic.ExpandoObject();
+                    var expandoDict = dto as IDictionary<string, object>;
+
+                    for (var i = 0; i < reader.FieldCount; i++) 
+                    {
+                        string fieldname = reader.GetName(i);
+                        
+                        if (expandoDict.ContainsKey(fieldname))
+                            expandoDict[fieldname] = reader[i];
+                        else
+                            expandoDict.Add(fieldname, reader[i]);
+                    }
+                    rows.Add(dto);
                 }
             }
             finally
