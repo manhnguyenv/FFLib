@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Reflection;
+using FFLib.Extensions;
 
 namespace FFLib
 {
@@ -179,11 +180,11 @@ namespace FFLib
                             if (attr is Attributes.MapsToAttribute)
                             {
                                 //add property to list indexed by alias name
-                                targetPropList.Add(((Attributes.MapsToAttribute)attr).PropertyName, p);
+                                targetPropList.AddOrReplace(((Attributes.MapsToAttribute)attr).PropertyName, p);
                                 //skip to next property
                                 continue;
                             }
-                    targetPropList.Add(p.Name, p);
+                    targetPropList.AddOrReplace(p.Name, p);
                 }
 
                 //load source properties
@@ -220,7 +221,18 @@ namespace FFLib
                         {
                             value = sProp.GetValue(sourceObj, null);
                             if (options.SkipNulls && value == null) continue;
-                            if (options.SkipZeroInts && value != null && value is int && (int)value == 0) continue;
+                            if (options.SkipZeroInts && value != null)
+                            {
+                                if (value is int && (int)value == 0) continue;
+                                if (sProp.PropertyType.IsEnum && (
+                                    (Enum.GetUnderlyingType(value.GetType()) == typeof(Int32) && (Int32)value == 0) ||
+                                    (Enum.GetUnderlyingType(value.GetType()) == typeof(byte) && (byte)value == 0) ||
+                                    (Enum.GetUnderlyingType(value.GetType()) == typeof(Int16) && (Int16)value == 0) ||
+                                    (Enum.GetUnderlyingType(value.GetType()) == typeof(Int64) && (Int64)value == 0) ||
+                                    (Enum.GetUnderlyingType(value.GetType()) == typeof(short) && (short)value == 0) 
+                                    ))
+                                    continue;
+                            }
                             DTOBinder._setValue(targetObj, prop, value);
                         }
                         catch (Exception ex)
