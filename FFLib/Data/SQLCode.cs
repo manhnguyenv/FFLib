@@ -100,6 +100,7 @@ namespace FFLib.Data
         public List<string> havingFragments = new List<string>(20);
         public List<string> orderbyFragments = new List<string>(20);
         public string unionFragment;
+        public List<SqlParameter> SqlParams = new List<SqlParameter>(20);
 
         /// <summary>
         /// Add SELECT fields w/ aliases if desired. The final Sql string will join the fields using a comma delimiter
@@ -229,7 +230,7 @@ namespace FFLib.Data
         public override string ToString()
         {
             return "SELECT " + (selectFragments != null && selectFragments.Count > 0 ? string.Join(", ", selectFragments) : "*")
-            + "\nFROM " + this.FromClause
+            + " \nFROM " + this.FromClause
             + (joinFragments != null && joinFragments.Count > 0 ? "\nJOIN " + string.Join("\nJOIN ", joinFragments) : "")
             + (whereFragments != null && whereFragments.Count > 0 ? "\nWHERE " + string.Join(" ", whereFragments) : "")
             + (groupbyFragments != null && groupbyFragments.Count > 0 ? "\nGROUP BY " + string.Join(",", groupbyFragments) : "")

@@ -239,11 +239,23 @@ namespace FFLib.Data
         /// <typeparam name="priKeyType">Primary key data type</typeparam>
         /// <param name="idList">Array of Id's to load</param>
         /// <returns></returns>
-        public virtual T[] Load<priKeyType>(priKeyType[] idList)
+        public virtual T[] Load<priKeyType>(priKeyType[] idList) 
         {
-            SqlMacro pk = new SqlMacro(SqlMacro.MacroTypes.Keyword,"pk",string.Join(",",idList));
+            SqlMacro pk = new SqlMacro(SqlMacro.MacroTypes.Keyword,"pk",string.Join(",",idList.EscapeSqlList(true)));
             string sql = "SELECT * FROM #__TableName WHERE #__PK in ("+pk.Token+")";
             return this.Load(sql, new SqlMacro[]{pk}, null);
+        }
+
+        /// <summary>
+        /// Loads an array of objects whose Primary keys are in idList. 
+        /// </summary>
+        /// <param name="idList">Array of Id's to load</param>
+        /// <returns></returns>
+        public virtual T[] Load(int[] idList)
+        {
+            SqlMacro pk = new SqlMacro(SqlMacro.MacroTypes.Keyword, "pk", string.Join(",", idList));
+            string sql = "SELECT * FROM #__TableName WHERE #__PK in (" + pk.Token + ")";
+            return this.Load(sql, new SqlMacro[] { pk }, null);
         }
 
         /// <summary>
