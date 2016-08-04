@@ -92,10 +92,19 @@ namespace FFLib.Extensions
             return string.Join(",", tlist);
         }
 
+        /// <summary>
+        /// Returns an array of string containing the escaped and optionaly quoted values from the input array.
+        /// Note: the escaped and quoted string values are obtained by calling ToString() on each input array value.
+        /// For proper results the array elements must produce the desired output from their ToString() method.
+        /// </summary>
+        /// <typeparam name="T">type of array</typeparam>
+        /// <param name="list">input array of values</param>
+        /// <param name="quote">Boolean to quote each value or not</param>
+        /// <returns></returns>
         public static string[] EscapeSqlList<T>(this T[] list, bool quote)
         {
             if (list == null || list.Length == 0) return new string[] { };
-            string[] tlist = (string[])list.Clone();
+            string[] tlist = new string[list.Length];
             for (int i = 0; i < list.Length; i++)
                 tlist[i] = list[i].ToString().SqlEscape(quote);
             return tlist;
