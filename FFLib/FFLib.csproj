@@ -60,6 +60,7 @@
     <Compile Include="Data\DBTableHelper.cs" />
     <Compile Include="Data\DBType.cs" />
     <Compile Include="Data\Extensions\DateTime.cs" />
+    <Compile Include="Data\MockDBTable.cs" />
     <Compile Include="Data\SQLCode.cs" />
     <Compile Include="Data\SqlParameter.cs" />
     <Compile Include="Extensions\Dictionary.cs" />

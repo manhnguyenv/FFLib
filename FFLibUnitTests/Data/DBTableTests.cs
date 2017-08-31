@@ -21,25 +21,13 @@ namespace FFLibUnitTests.Data
             expected.ID = 1;
 
             //Setup
-            System.Data.DataTable dr = new System.Data.DataTable();
-            dr.Columns.Add("ID", typeof(int));
-            dr.Columns.Add("Name", typeof(String));
-            dr.Columns.Add("Status", typeof(string));
-            dr.Columns.Add("CreateDate", typeof(DateTime));
-            System.Data.DataRow drRow = dr.NewRow();
-            drRow["ID"] = 1;
-            drRow["Name"] = "test";
-            drRow["Status"] = "open";
-            drRow["CreateDate"] = DateTime.Now;
-            dr.Rows.Add(drRow);
-
-            System.Data.IDataReader idr = dr.CreateDataReader();
+            var mockdata = FFLib.Data.MockDBData<TestDTO>.ImportTableData(new TestDTO[] { new TestDTO { ID = 1, Name = "test", Status = "open", CreateDate = DateTime.Now } });
 
             Conn.InTrx.Returns<bool>(false);
             Conn.dbProvider.Returns<FFLib.Data.DBProviders.IDBProvider>(dbprovider);
             Conn.State.Returns<System.Data.ConnectionState>(System.Data.ConnectionState.Closed);
 
-            dbprovider.ExecuteReader(null, null, null).ReturnsForAnyArgs(idr);
+            dbprovider.ExecuteReader(null, null, null).ReturnsForAnyArgs(mockdata);
 
             //Execute
             dtoTable = new FFLib.Data.DBTable<TestDTO>(Conn);
@@ -60,25 +48,13 @@ namespace FFLibUnitTests.Data
             expected.XID = 1;
 
             //Setup
-            System.Data.DataTable dr = new System.Data.DataTable();
-            dr.Columns.Add("ID", typeof(int));
-            dr.Columns.Add("Name", typeof(String));
-            dr.Columns.Add("Status", typeof(string));
-            dr.Columns.Add("CreateDate", typeof(DateTime));
-            System.Data.DataRow drRow = dr.NewRow();
-            drRow["ID"] = 1;
-            drRow["Name"] = "test";
-            drRow["Status"] = "open";
-            drRow["CreateDate"] = DateTime.Now;
-            dr.Rows.Add(drRow);
-
-            System.Data.IDataReader idr = dr.CreateDataReader();
+            var mockdata = FFLib.Data.MockDBData<TestDTO2>.ImportTableData(new { ID = 1, Name = "test", Status = "open", CreateDate = DateTime.Now, IsLocked = false });
 
             Conn.InTrx.Returns<bool>(false);
             Conn.dbProvider.Returns<FFLib.Data.DBProviders.IDBProvider>(dbprovider);
             Conn.State.Returns<System.Data.ConnectionState>(System.Data.ConnectionState.Closed);
 
-            dbprovider.ExecuteReader(null,null,null).ReturnsForAnyArgs(idr);
+            dbprovider.ExecuteReader(null,null,null).ReturnsForAnyArgs(mockdata);
 
             //Execute
             dtoTable = new FFLib.Data.DBTable<TestDTO2>(Conn);
