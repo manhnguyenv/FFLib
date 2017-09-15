@@ -30,6 +30,17 @@ namespace FFLib.Extensions
         }
 
         /// <summary>
+        /// Returns the int value when not null or 0 when int? is null.
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static DateTime NotNull(this DateTime? self)
+        {
+            if (self != null) return self.Value;
+            return DateTime.Parse("1900-01-01 12:00");
+        }
+
+        /// <summary>
         /// returns the string value when not null or string.empty when string is null.
         /// </summary>
         /// <param name="self"></param>
