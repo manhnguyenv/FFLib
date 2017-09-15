@@ -54,6 +54,7 @@ namespace FFLib
                 foreach(var kvp in kvList){
                     var kv = kvp.Split('=');
                     if (kv == null || kv.Length < 2) continue;
+                    if (_qparams.Get(kv[0]) != null) _qparams.Remove(kv[0]);
                     _qparams.Add(kv[0],kv[1]);
                 }
 
