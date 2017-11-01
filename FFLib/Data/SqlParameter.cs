@@ -21,6 +21,7 @@ namespace FFLib.Data
         public static SqlParameter[] FromDynamic(dynamic sqlParams)
         {
             var spList = new List<SqlParameter>();
+            if (sqlParams == null) return spList.ToArray();
             foreach (var prop in sqlParams.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 spList.Add(new SqlParameter("@"+prop.Name, prop.GetValue(sqlParams, null)));
             return spList.ToArray();

@@ -652,7 +652,9 @@ namespace FFLib.Data
 
         public U ExecuteScalar<U>(string SqlText, SqlParameter SqlParam)
         {
-            return this.ExecuteScalar<U>(SqlText, null, new SqlParameter[] {SqlParam});
+            var sqlParams = new SqlParameter[] { };
+            if (SqlParam != null) sqlParams = new SqlParameter[] { SqlParam };
+            return this.ExecuteScalar<U>(SqlText, null, sqlParams);
         }
 
         protected virtual T[] Bind(IDataReader reader)
