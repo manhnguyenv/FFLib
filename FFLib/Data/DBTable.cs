@@ -45,6 +45,32 @@ namespace FFLib.Data
         void Save(T obj);
     }
 
+    /// <summary>
+    /// Field Definition info for a DTO field.
+    /// </summary>
+    public class FieldDef
+    {
+        MemberInfo _memberInfo;
+        string _mappingName;
+        string _fieldName;
+        DBType? _castAsType;
+
+        public FieldDef(MemberInfo memberInfo, string mappingName, string fieldName, DBType? castAsType) : base() {
+            _memberInfo = memberInfo;
+            _mappingName = mappingName;
+            _fieldName = fieldName;
+            _castAsType = castAsType;
+        }
+
+        public MemberInfo MemberInfo { get {return _memberInfo; } }
+
+        public string MappingName { get { return _mappingName; } }
+
+        public string FieldName { get { return _fieldName; } }
+
+        public DBType? CastAsType { get { return _castAsType; } }
+    }
+
     public class DBTable<T> : IDBTable<T> where T : class, new()
     {
         protected IDBConnection _conn = null;
@@ -54,6 +80,7 @@ namespace FFLib.Data
         protected MemberInfo _pk_memberinfo = null;
         protected string _tableName = null;
         protected int _commandTimeout = 0;
+        protected FieldDef[] _fieldTypeCache;
 
         //static Regex subTableNameRegex = new Regex("#__TableName", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         //static Regex subPKRegex = new Regex("#__PK", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -81,6 +108,8 @@ namespace FFLib.Data
             _tableName = tableDef.TableName;
             _dbProvider = _conn.dbProvider;
             _dbProvider.CommandTimeout = CommandTimeout;
+            _fieldTypeCache = tableDef.Fields;
+
         }
 
         public DBTable(IDBContext dbContext, IDBConnection Conn)
@@ -664,8 +693,9 @@ namespace FFLib.Data
             {
             if (reader == null || reader.IsClosed) return rows.ToArray();
 
-            MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
-            Dictionary<string,int> columnIdx = new Dictionary<string,int>();
+                //MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
+                var miList = this._fieldTypeCache;
+                Dictionary<string,int> columnIdx = new Dictionary<string,int>();
             
                 for (int i = 0; i < reader.FieldCount; i++)
                 {
@@ -674,23 +704,19 @@ namespace FFLib.Data
                 while (reader.Read())
                 {
                     T dto = new T();
-                    foreach (MemberInfo m in miList)
+                    foreach (FieldDef f in _fieldTypeCache)
                     {
-                        string mName = m.Name;
-                        object attr = Attribute.GetCustomAttribute(m,typeof(FFLib.Attributes.MapsToAttribute), false);
-                        if (attr != null) mName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
-                        object castAs = Attribute.GetCustomAttribute(m, typeof(FFLib.Data.Attributes.CastAs), false);
-                        if (!columnIdx.ContainsKey(mName) && !columnIdx.ContainsKey(m.Name)) continue;
-                        mName = columnIdx.ContainsKey(mName) ? mName : m.Name;
-                        switch (m.MemberType)
+                        if (!columnIdx.ContainsKey(f.MappingName) && !columnIdx.ContainsKey(f.FieldName)) continue;
+                        string mName = columnIdx.ContainsKey(f.MappingName) ? f.MappingName : f.FieldName;
+                        switch (f.MemberInfo.MemberType)
                         {
                             case MemberTypes.Field:
-                                FieldInfo fi = m as FieldInfo;
-                                DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : castAs != null ? this.DBCastAs(((FFLib.Data.Attributes.CastAs)castAs).DBType, reader.GetValue(columnIdx[mName])) : reader.GetValue(columnIdx[mName]));
+                                FieldInfo fi = f.MemberInfo as FieldInfo;
+                                DBTable<T>._SetValue(dto, f.MemberInfo, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : f.CastAsType != null ? this.DBCastAs(f.CastAsType.Value, reader.GetValue(columnIdx[mName])) : reader.GetValue(columnIdx[mName]));
                                 break;
                             case MemberTypes.Property:
-                                PropertyInfo pi = m as PropertyInfo;
-                                if (pi.CanWrite) DBTable<T>._SetValue(dto, m, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : castAs != null ? this.DBCastAs(((FFLib.Data.Attributes.CastAs)castAs).DBType, reader.GetValue(columnIdx[mName])) : reader.GetValue(columnIdx[mName]));
+                                PropertyInfo pi = f.MemberInfo as PropertyInfo;
+                                if (pi.CanWrite) DBTable<T>._SetValue(dto, f.MemberInfo, reader.GetValue(columnIdx[mName]) == DBNull.Value ? null : f.CastAsType != null ? this.DBCastAs(f.CastAsType.Value, reader.GetValue(columnIdx[mName])) : reader.GetValue(columnIdx[mName]));
                                 break;
                         }
                     }
@@ -717,7 +743,7 @@ namespace FFLib.Data
             {
                 if (reader == null || reader.IsClosed) return rows.ToArray();
 
-                MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
+                //MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
                 Dictionary<string, int> columnIdx = new Dictionary<string, int>();
 
                 for (int i = 0; i < reader.FieldCount; i++)
