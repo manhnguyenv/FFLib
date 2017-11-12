@@ -451,19 +451,19 @@ namespace FFLib.Data
             if (string.IsNullOrEmpty(sql) || sql.Trim() == string.Empty) return results;
 
             T[] rows = this.Load(sql, SqlMacros, SqlParams);
-
+            var m = _fieldTypeCache.Where(x => x.FieldName == keyfield).FirstOrDefault();
+            var mi = (m?.MemberInfo);
+            if (mi == null) return results;
             foreach (T row in rows)
             {
-                MemberInfo[] mi = row.GetType().GetMember(keyfield, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
-                if (mi == null || mi.Length == 0) continue;
-                switch (mi[0].MemberType)
+                switch (mi.MemberType)
                 {
                     case MemberTypes.Property:
-                        PropertyInfo pi = mi[0] as PropertyInfo;
+                        PropertyInfo pi = mi as PropertyInfo;
                         this.AddRowAssocList(results, pi, row);
                         break;
                     case MemberTypes.Field:
-                        FieldInfo fi = mi[0] as FieldInfo;
+                        FieldInfo fi = mi as FieldInfo;
                         this.AddRowAssocList(results, fi, row);
                         break;
                     default: continue;
