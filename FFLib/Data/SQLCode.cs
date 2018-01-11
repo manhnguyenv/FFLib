@@ -99,7 +99,8 @@ namespace FFLib.Data
         public List<string> groupbyFragments = new List<string>(20);
         public List<string> havingFragments = new List<string>(20);
         public List<string> orderbyFragments = new List<string>(20);
-        public string unionFragment;
+        protected string suffixSql = null;
+        protected string unionFragment;
         public List<SqlParameter> SqlParams = new List<SqlParameter>(20);
 
         /// <summary>
@@ -211,6 +212,16 @@ namespace FFLib.Data
             else this.unionFragment = "UNION "+unionFragment;
             return this;
         }
+        /// <summary>
+        /// Adds provided sql to the end of the sql statement. Suffix sql should be already be properly escaped. Sql text provided will overwrite any previous set value.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        public virtual SqlQuery SuffixSql(string sql)
+        {
+            suffixSql = sql;
+            return this;
+        }
 
         public string FromClause
         {
@@ -236,7 +247,8 @@ namespace FFLib.Data
             + (groupbyFragments != null && groupbyFragments.Count > 0 ? "\nGROUP BY " + string.Join(",", groupbyFragments) : "")
             + (havingFragments != null && havingFragments.Count > 0 ? "\nHAVING " + string.Join(",", havingFragments) : "")
             + (orderbyFragments != null && orderbyFragments.Count > 0 ? "\nORDER BY " + string.Join(",", orderbyFragments) : "")
-            + (!string.IsNullOrWhiteSpace(unionFragment) ? "\n" + unionFragment + "\n" : "");
+            + (!string.IsNullOrWhiteSpace(suffixSql) ? "\n" + suffixSql : "" )
+            + (!string.IsNullOrWhiteSpace(unionFragment) ? "\n" + unionFragment : "");
         }
     }
 }
