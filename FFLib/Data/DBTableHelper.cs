@@ -24,20 +24,23 @@ namespace FFLib.Data
     {
         public class TableDef
         {
-            public TableDef(string tableName, string primaryKey, MemberInfo pk_memberInfo)
+            public TableDef(string tableName, string primaryKey, MemberInfo pk_memberInfo, FieldDef[] fields)
             {
                 _tableName = tableName;
                 _pk = primaryKey;
                 _pk_memberinfo = pk_memberInfo;
+                _fields = fields;
             }
 
             string _tableName;
             string _pk;
             MemberInfo _pk_memberinfo;
+            FieldDef[] _fields;
 
             public string TableName { get { return _tableName; } }
             public string PK { get { return _pk; } }
             public MemberInfo PK_MemberInfo { get { return _pk_memberinfo; } }
+            public FieldDef[] Fields { get { return _fields; } }
 
             
         }
@@ -46,32 +49,38 @@ namespace FFLib.Data
             string _tableName = null;
             string _pk = null;
             MemberInfo _pk_memberinfo = null;
-            bool attr_found = false;
+            List<FieldDef> _fieldDefs = null;
 
             MemberInfo[] miList = typeof(T).GetMember("*", MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public);
+            _fieldDefs = new List<FieldDef>(miList.Length);
             foreach (MemberInfo mi in miList)
             {
+                string mName = mi.Name;
+                DBType? castAs = null;
                 foreach (Attribute attr in mi.GetCustomAttributes(typeof(Attributes.PrimaryKeyAttribute), false))
                 {
-                    if (attr is Attributes.PrimaryKeyAttribute) 
+                    if (attr is Attributes.PrimaryKeyAttribute)
                     {
-                        _pk_memberinfo = mi; _pk = mi.Name; attr_found = true; 
+                        _pk_memberinfo = mi; _pk = mi.Name;
                         foreach (Attribute attr2 in mi.GetCustomAttributes(typeof(FFLib.Attributes.MapsToAttribute), false))
                             if (attr2 is FFLib.Attributes.MapsToAttribute) { _pk = ((FFLib.Attributes.MapsToAttribute)attr2).PropertyName; break; }
-                        break; 
+                        break;
                     }
+                    if (attr is FFLib.Attributes.MapsToAttribute) mName = ((FFLib.Attributes.MapsToAttribute)attr).PropertyName;
+                    if (attr is FFLib.Data.Attributes.CastAs) castAs = ((FFLib.Data.Attributes.CastAs)attr).DBType;
                 }
-                if (attr_found) break;
+                _fieldDefs.Add(new FieldDef(mi, mName, mi.Name, castAs));
             }
-            attr_found = false;
 
-            if (!string.IsNullOrEmpty(tableName)) { _tableName = tableName;}
+            if (!string.IsNullOrEmpty(tableName)) { _tableName = tableName; }
             else
+            {
                 foreach (Attribute attr in typeof(T).GetCustomAttributes(typeof(Attributes.DBTableNameAttribute), false))
                 {
-                    if (attr is Attributes.DBTableNameAttribute) { _tableName = ((Attributes.DBTableNameAttribute)attr).TableName; attr_found = true; break; }
+                    if (attr is Attributes.DBTableNameAttribute) { _tableName = ((Attributes.DBTableNameAttribute)attr).TableName; break; }
                 }
-            return new TableDef(_tableName, _pk, _pk_memberinfo);
+            }
+            return new TableDef(_tableName, _pk, _pk_memberinfo, _fieldDefs.ToArray());
         }
     }
 }
