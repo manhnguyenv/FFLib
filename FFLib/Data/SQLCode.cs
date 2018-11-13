@@ -150,6 +150,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery Join(string joinStmt)
         {
+            if (string.IsNullOrWhiteSpace(joinStmt)) return this;
             this.joinFragments.Add(joinStmt);
             return this;
         }
@@ -161,6 +162,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery Where(string whereFragment)
         {
+            if (string.IsNullOrWhiteSpace(whereFragment)) return this;
             this.whereFragments.Add(whereFragment);
             return this;
         }
@@ -173,6 +175,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery GroupBy(string groupbyFragment)
         {
+            if (string.IsNullOrWhiteSpace(groupbyFragment)) return this;
             this.groupbyFragments.Add(groupbyFragment);
             return this;
         }
@@ -185,6 +188,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery Having(string havingFragment)
         {
+            if (string.IsNullOrWhiteSpace(havingFragment)) return this;
             this.havingFragments.Add(havingFragment);
             return this;
         }
@@ -197,6 +201,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery OrderBy(string orderbyFragment)
         {
+            if (string.IsNullOrWhiteSpace(orderbyFragment)) return this;
             this.orderbyFragments.Add(orderbyFragment);
             return this;
         }
@@ -223,6 +228,9 @@ namespace FFLib.Data
             return this;
         }
 
+        /// <summary>
+        /// Returns the 'FROM' clause of the SQL Query as a string
+        /// </summary>
         public string FromClause
         {
             get
@@ -238,15 +246,30 @@ namespace FFLib.Data
                 return tablename;
             }
         }
+
+        /// <summary>
+        /// Returns the 'WHERE' clause of the Sql Query as a string
+        /// </summary>
+        public string WhereClause { get { return (whereFragments != null && whereFragments.Count > 0 ? "\nWHERE " + string.Join(" ", whereFragments) : ""); } }
+
+        /// <summary>
+        /// Returns the 'ORDER BY' clause of the Sql Query as a string
+        /// </summary>
+        public string OrderByCaluse { get { return (orderbyFragments != null && orderbyFragments.Count > 0 ? "\nORDER BY " + string.Join(",", orderbyFragments) : ""); } }
+
+        /// <summary>
+        /// Returns the Sql string of the Sql Query
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return "SELECT " + (selectFragments != null && selectFragments.Count > 0 ? string.Join(", ", selectFragments) : "*")
             + " \nFROM " + this.FromClause
             + (joinFragments != null && joinFragments.Count > 0 ? "\nJOIN " + string.Join("\nJOIN ", joinFragments) : "")
-            + (whereFragments != null && whereFragments.Count > 0 ? "\nWHERE " + string.Join(" ", whereFragments) : "")
+            + (WhereClause)
             + (groupbyFragments != null && groupbyFragments.Count > 0 ? "\nGROUP BY " + string.Join(",", groupbyFragments) : "")
             + (havingFragments != null && havingFragments.Count > 0 ? "\nHAVING " + string.Join(",", havingFragments) : "")
-            + (orderbyFragments != null && orderbyFragments.Count > 0 ? "\nORDER BY " + string.Join(",", orderbyFragments) : "")
+            + (OrderByCaluse)
             + (!string.IsNullOrWhiteSpace(suffixSql) ? "\n" + suffixSql : "" )
             + (!string.IsNullOrWhiteSpace(unionFragment) ? "\n" + unionFragment : "");
         }
