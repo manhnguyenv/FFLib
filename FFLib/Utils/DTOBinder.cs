@@ -307,7 +307,10 @@ namespace FFLib
                 case "datetime": prop.SetValue(obj, Convert.ToDateTime(value), null); break;
                 case "guid": prop.SetValue(obj, new Guid((string)value), null); break;
                 case "date": prop.SetValue(obj, Convert.ToDateTime(value), null); break;
-                default: prop.SetValue(obj, value, null); break;
+                default:
+                    if (prop.PropertyType.IsEnum && value is string)
+                        value = Enum.Parse(prop.PropertyType, value.ToString());
+                    prop.SetValue(obj, value, null); break;
             }
         }
 

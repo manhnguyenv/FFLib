@@ -51,6 +51,27 @@ namespace FFLib
         }
 
         /// <summary>
+        /// Add a list of values to the index using a keyselector function to identify the key value of each item.
+        /// </summary>
+        /// <param name="valueList"></param>
+        /// <param name="keyselector"></param>
+        public void AddRange(IEnumerable<TValue> valueList, Func<TValue,TKey> keyselector)
+        {
+            if (valueList == null) return;
+            foreach (var value in valueList)
+            {
+                if (value == null) continue;
+                var key = keyselector(value);
+                if (this.ContainsKey(key)) this[key].Add(value);
+                else
+                {
+                    this.Add(key, new List<TValue>(_itemCapacity));
+                    this[key].Add(value);
+                }
+            }
+        }
+
+        /// <summary>
         /// Get the first Item for a given Key. If the Key is not found a default value is returned.
         /// </summary>
         /// <param name="key">Key</param>
@@ -74,6 +95,26 @@ namespace FFLib
             if (!this.ContainsKey(key)) return default(TValue);
             if (this[key] == null) return default(TValue);
             return this[key][this[key].Count-1];
+        }
+    }
+
+    public static class IEnumerableExtension
+    {
+
+        /// <summary>
+        /// Create an IndexedList from an IEnumerable
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="self"></param>
+        /// <param name="keySelector"></param>
+        /// <returns></returns>
+        public static IndexedList<TKey, TValue> ToIndexedList<TKey, TValue>(this IEnumerable<TValue> self, Func<TValue,TKey> keySelector)
+        {
+            var result = new IndexedList<TKey, TValue>(self.Count());
+            foreach (var i in self)
+                result.Add(keySelector(i), i);
+            return result;
         }
     }
 }

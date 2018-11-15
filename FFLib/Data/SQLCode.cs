@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFLib.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -94,7 +95,7 @@ namespace FFLib.Data
         public List<string> selectFragments = new List<string>(20);
         public ISqlTableSource fromFragment;
         public string fromSubQueryAlias;
-        public List<string> joinFragments = new List<string>(20);
+        public List<JoinStmt> joinFragments = new List<JoinStmt>(20);
         public List<string> whereFragments = new List<string>(20);
         public List<string> groupbyFragments = new List<string>(20);
         public List<string> havingFragments = new List<string>(20);
@@ -102,6 +103,11 @@ namespace FFLib.Data
         protected string suffixSql = null;
         protected string unionFragment;
         public List<SqlParameter> SqlParams = new List<SqlParameter>(20);
+
+        public class JoinStmt {
+            public string prefix = "";
+            public string stmt;
+        }
 
         /// <summary>
         /// Add SELECT fields w/ aliases if desired. The final Sql string will join the fields using a comma delimiter
@@ -150,8 +156,23 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery Join(string joinStmt)
         {
-            this.joinFragments.Add(joinStmt);
+            if (string.IsNullOrWhiteSpace(joinStmt)) return this;
+            this.joinFragments.Add(new JoinStmt() { stmt = joinStmt });
             return this;
+        }
+
+        /// <summary>
+        /// Add a Join Statement to the Query with a Joining prefix like 'Left' or 'Left Outer' or 'Right'
+        /// </summary>
+        /// <param name="prefix">A Join Prefix like 'Left' or 'Left Outer' or 'Right'</param>
+        /// <param name="joinStmt">A Join Statement excluding the 'JOIN' Keyword</param>
+        /// <returns></returns>
+        public virtual SqlQuery Join(string prefix, string joinStmt)
+        {
+            if (string.IsNullOrWhiteSpace(joinStmt)) return this;
+            this.joinFragments.Add(new JoinStmt() { prefix = prefix, stmt = joinStmt });
+            return this;
+
         }
 
         /// <summary>
@@ -161,6 +182,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery Where(string whereFragment)
         {
+            if (string.IsNullOrWhiteSpace(whereFragment)) return this;
             this.whereFragments.Add(whereFragment);
             return this;
         }
@@ -173,6 +195,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery GroupBy(string groupbyFragment)
         {
+            if (string.IsNullOrWhiteSpace(groupbyFragment)) return this;
             this.groupbyFragments.Add(groupbyFragment);
             return this;
         }
@@ -185,6 +208,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery Having(string havingFragment)
         {
+            if (string.IsNullOrWhiteSpace(havingFragment)) return this;
             this.havingFragments.Add(havingFragment);
             return this;
         }
@@ -197,6 +221,7 @@ namespace FFLib.Data
         /// <returns></returns>
         public virtual SqlQuery OrderBy(string orderbyFragment)
         {
+            if (string.IsNullOrWhiteSpace(orderbyFragment)) return this;
             this.orderbyFragments.Add(orderbyFragment);
             return this;
         }
@@ -223,6 +248,9 @@ namespace FFLib.Data
             return this;
         }
 
+        /// <summary>
+        /// Returns the 'FROM' clause of the SQL Query as a string
+        /// </summary>
         public string FromClause
         {
             get
@@ -238,15 +266,44 @@ namespace FFLib.Data
                 return tablename;
             }
         }
+
+        /// <summary>
+        /// Returns the 'WHERE' clause of the Sql Query as a string
+        /// </summary>
+        public string WhereClause { get { return (whereFragments != null && whereFragments.Count > 0 ? "\nWHERE " + string.Join(" ", whereFragments) : ""); } }
+
+        /// <summary>
+        /// Returns the 'ORDER BY' clause of the Sql Query as a string
+        /// </summary>
+        public string OrderByCaluse { get { return (orderbyFragments != null && orderbyFragments.Count > 0 ? "\nORDER BY " + string.Join(",", orderbyFragments) : ""); } }
+
+        /// <summary>
+        /// Generates a string from the Join list
+        /// </summary>
+        /// <param name="joins"></param>
+        /// <returns>SQL string of join statements or an empty string</returns>
+        protected string JoinsToString(List<JoinStmt> joins)
+        {
+            if (joins == null || joins.Count == 0) return string.Empty;
+            var r = new StringBuilder(2000);
+            foreach (var js in joins)
+                r.Append("\n" + js.prefix.NotNull() + " JOIN " + js.stmt);
+            return r.ToString();
+        }
+
+        /// <summary>
+        /// Returns the Sql string of the Sql Query
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return "SELECT " + (selectFragments != null && selectFragments.Count > 0 ? string.Join(", ", selectFragments) : "*")
             + " \nFROM " + this.FromClause
-            + (joinFragments != null && joinFragments.Count > 0 ? "\nJOIN " + string.Join("\nJOIN ", joinFragments) : "")
-            + (whereFragments != null && whereFragments.Count > 0 ? "\nWHERE " + string.Join(" ", whereFragments) : "")
+            + this.JoinsToString(joinFragments)// (joinFragments != null && joinFragments.Count > 0 ? "\nJOIN " + string.Join("\nJOIN ", joinFragments) : "")
+            + (WhereClause)
             + (groupbyFragments != null && groupbyFragments.Count > 0 ? "\nGROUP BY " + string.Join(",", groupbyFragments) : "")
             + (havingFragments != null && havingFragments.Count > 0 ? "\nHAVING " + string.Join(",", havingFragments) : "")
-            + (orderbyFragments != null && orderbyFragments.Count > 0 ? "\nORDER BY " + string.Join(",", orderbyFragments) : "")
+            + (OrderByCaluse)
             + (!string.IsNullOrWhiteSpace(suffixSql) ? "\n" + suffixSql : "" )
             + (!string.IsNullOrWhiteSpace(unionFragment) ? "\n" + unionFragment : "");
         }
